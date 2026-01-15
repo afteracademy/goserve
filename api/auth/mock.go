@@ -3,9 +3,9 @@ package auth
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/mock"
-	"github.com/unusualcodeorg/goserve/api/auth/dto"
-	"github.com/unusualcodeorg/goserve/api/auth/model"
-	userModel "github.com/unusualcodeorg/goserve/api/user/model"
+	"github.com/afteracademy/goserve/api/auth/dto"
+	"github.com/afteracademy/goserve/api/auth/model"
+	userModel "github.com/afteracademy/goserve/api/user/model"
 )
 
 type MockService struct {

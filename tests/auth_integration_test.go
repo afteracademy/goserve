@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/unusualcodeorg/goserve/api/auth/model"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/startup"
+	"github.com/afteracademy/goserve/api/auth/model"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/startup"
 )
 
 func TestIntegrationAuthController_SignupSuccess(t *testing.T) {

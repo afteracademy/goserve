@@ -3,12 +3,12 @@ package blogs
 import (
 	"time"
 
-	"github.com/unusualcodeorg/goserve/api/blog/model"
-	"github.com/unusualcodeorg/goserve/api/blogs/dto"
-	coredto "github.com/unusualcodeorg/goserve/arch/dto"
-	"github.com/unusualcodeorg/goserve/arch/mongo"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/arch/redis"
+	"github.com/afteracademy/goserve/api/blog/model"
+	"github.com/afteracademy/goserve/api/blogs/dto"
+	coredto "github.com/afteracademy/goserve/arch/dto"
+	"github.com/afteracademy/goserve/arch/mongo"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/arch/redis"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"

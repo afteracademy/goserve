@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/unusualcodeorg/goserve/api/auth/dto"
-	"github.com/unusualcodeorg/goserve/arch/network"
+	"github.com/afteracademy/goserve/api/auth/dto"
+	"github.com/afteracademy/goserve/arch/network"
 )
 
 func TestAuthController_SignupBadRequest(t *testing.T) {

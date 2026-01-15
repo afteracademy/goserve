@@ -56,11 +56,11 @@ func generateService(featureDir, featureName string) error {
 	template := fmt.Sprintf(`package %s
 
 import (
-  "github.com/unusualcodeorg/goserve/api/%s/dto"
-	"github.com/unusualcodeorg/goserve/api/%s/model"
-	"github.com/unusualcodeorg/goserve/arch/mongo"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/arch/redis"
+  "github.com/afteracademy/goserve/api/%s/dto"
+	"github.com/afteracademy/goserve/api/%s/model"
+	"github.com/afteracademy/goserve/arch/mongo"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/arch/redis"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -107,11 +107,11 @@ func generateController(featureDir, featureName string) error {
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/unusualcodeorg/goserve/api/%s/dto"
-	"github.com/unusualcodeorg/goserve/common"
-	coredto "github.com/unusualcodeorg/goserve/arch/dto"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/utils"
+	"github.com/afteracademy/goserve/api/%s/dto"
+	"github.com/afteracademy/goserve/common"
+	coredto "github.com/afteracademy/goserve/arch/dto"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/utils"
 )
 
 type controller struct {
@@ -179,7 +179,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/unusualcodeorg/goserve/arch/mongo"
+	"github.com/afteracademy/goserve/arch/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongod "go.mongodb.org/mongo-driver/mongo"

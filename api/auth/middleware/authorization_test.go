@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	userModel "github.com/unusualcodeorg/goserve/api/user/model"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/common"
+	userModel "github.com/afteracademy/goserve/api/user/model"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

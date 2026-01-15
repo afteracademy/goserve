@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/unusualcodeorg/goserve/api/user/model"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/common"
+	"github.com/afteracademy/goserve/api/user/model"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/common"
 )
 
 type authorizationProvider struct {

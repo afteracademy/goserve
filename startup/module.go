@@ -3,19 +3,19 @@ package startup
 import (
 	"context"
 
-	"github.com/unusualcodeorg/goserve/api/auth"
-	authMW "github.com/unusualcodeorg/goserve/api/auth/middleware"
-	"github.com/unusualcodeorg/goserve/api/blog"
-	"github.com/unusualcodeorg/goserve/api/blog/author"
-	"github.com/unusualcodeorg/goserve/api/blog/editor"
-	"github.com/unusualcodeorg/goserve/api/blogs"
-	"github.com/unusualcodeorg/goserve/api/contact"
-	"github.com/unusualcodeorg/goserve/api/user"
-	coreMW "github.com/unusualcodeorg/goserve/arch/middleware"
-	"github.com/unusualcodeorg/goserve/arch/mongo"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/arch/redis"
-	"github.com/unusualcodeorg/goserve/config"
+	"github.com/afteracademy/goserve/api/auth"
+	authMW "github.com/afteracademy/goserve/api/auth/middleware"
+	"github.com/afteracademy/goserve/api/blog"
+	"github.com/afteracademy/goserve/api/blog/author"
+	"github.com/afteracademy/goserve/api/blog/editor"
+	"github.com/afteracademy/goserve/api/blogs"
+	"github.com/afteracademy/goserve/api/contact"
+	"github.com/afteracademy/goserve/api/user"
+	coreMW "github.com/afteracademy/goserve/arch/middleware"
+	"github.com/afteracademy/goserve/arch/mongo"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/arch/redis"
+	"github.com/afteracademy/goserve/config"
 )
 
 type Module network.Module[module]

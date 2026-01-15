@@ -1,8 +1,8 @@
 # goserve - Go Backend Architecture
 
-[![Docker Compose CI](https://github.com/unusualcodeorg/goserve/actions/workflows/docker_compose.yml/badge.svg)](https://github.com/unusualcodeorg/goserve/actions/workflows/docker_compose.yml)
-[![Starter Project](https://img.shields.io/badge/Starter%20Project%20CLI-red?label=Get&logo=go)](https://github.com/unusualcodeorg/goservegen)
-[![Download](https://img.shields.io/badge/Download-Starter%20Project%20Zip-green.svg)](https://github.com/unusualcodeorg/goservegen/raw/main/project.zip)
+[![Docker Compose CI](https://github.com/afteracademy/goserve/actions/workflows/docker_compose.yml/badge.svg)](https://github.com/afteracademy/goserve/actions/workflows/docker_compose.yml)
+[![Starter Project](https://img.shields.io/badge/Starter%20Project%20CLI-red?label=Get&logo=go)](https://github.com/afteracademy/goservegen)
+[![Download](https://img.shields.io/badge/Download-Starter%20Project%20Zip-green.svg)](https://github.com/afteracademy/goservegen/raw/main/project.zip)
 
 ![Banner](.extra/docs/goserve-banner.png)
 
@@ -82,7 +82,7 @@ vscode is the recommended editor - dark theme
 **1. Get the repo**
 
 ```bash
-git clone https://github.com/unusualcodeorg/goserve.git
+git clone https://github.com/afteracademy/goserve.git
 ```
 
 **2. Generate RSA Keys**
@@ -142,8 +142,8 @@ go run .tools/apigen.go sample
 [How to Architect Good Go Backend REST API Services](https://medium.com/@janishar.ali/how-to-architecture-good-go-backend-rest-api-services-14cc4730c05b)
 
 ## How to use this architecture in your project?
-You can use [goservegen](https://github.com/unusualcodeorg/goservegen) CLI to generate starter project for this architecture. 
-> Check out the repo [github.com/unusualcodeorg/goservegen](https://github.com/unusualcodeorg/goservegen) for more information.
+You can use [goservegen](https://github.com/afteracademy/goservegen) CLI to generate starter project for this architecture. 
+> Check out the repo [github.com/afteracademy/goservegen](https://github.com/afteracademy/goservegen) for more information.
 
 ## Documentation
 Information about the framework
@@ -159,7 +159,7 @@ import (
   "time"
 
   "github.com/go-playground/validator/v10"
-  "github.com/unusualcodeorg/goserve/arch/mongo"
+  "github.com/afteracademy/goserve/arch/mongo"
   "go.mongodb.org/mongo-driver/bson"
   "go.mongodb.org/mongo-driver/bson/primitive"
   mongod "go.mongodb.org/mongo-driver/mongo"
@@ -286,11 +286,11 @@ type Dto[T any] interface {
 package sample
 
 import (
-  "github.com/unusualcodeorg/goserve/api/sample/dto"
-  "github.com/unusualcodeorg/goserve/api/sample/model"
-  "github.com/unusualcodeorg/goserve/arch/mongo"
-  "github.com/unusualcodeorg/goserve/arch/network"
-  "github.com/unusualcodeorg/goserve/arch/redis"
+  "github.com/afteracademy/goserve/api/sample/dto"
+  "github.com/afteracademy/goserve/api/sample/model"
+  "github.com/afteracademy/goserve/arch/mongo"
+  "github.com/afteracademy/goserve/arch/network"
+  "github.com/afteracademy/goserve/arch/redis"
   "go.mongodb.org/mongo-driver/bson"
   "go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -345,11 +345,11 @@ package sample
 
 import (
   "github.com/gin-gonic/gin"
-  "github.com/unusualcodeorg/goserve/api/sample/dto"
-  "github.com/unusualcodeorg/goserve/common"
-  coredto "github.com/unusualcodeorg/goserve/arch/dto"
-  "github.com/unusualcodeorg/goserve/arch/network"
-  "github.com/unusualcodeorg/goserve/utils"
+  "github.com/afteracademy/goserve/api/sample/dto"
+  "github.com/afteracademy/goserve/common"
+  coredto "github.com/afteracademy/goserve/arch/dto"
+  "github.com/afteracademy/goserve/arch/network"
+  "github.com/afteracademy/goserve/utils"
 )
 
 type controller struct {
@@ -436,7 +436,7 @@ type SendResponse interface {
 ```go
 import (
   ...
-  "github.com/unusualcodeorg/goserve/api/sample"
+  "github.com/afteracademy/goserve/api/sample"
 )
 
 ...
@@ -455,7 +455,7 @@ func (m *module) Controllers() []network.Controller {
 ```go
 import (
   ...
-  sample "github.com/unusualcodeorg/goserve/api/sample/model"
+  sample "github.com/afteracademy/goserve/api/sample/model"
 )
 
 func EnsureDbIndexes(db mongo.Database) {
@@ -465,7 +465,7 @@ func EnsureDbIndexes(db mongo.Database) {
 ```
 
 ## Go Microservices Architecture using goserve
-`goserve` also provides `micro` package to build REST API microservices. Find the microservices version of this blog service project at [github.com/unusualcodeorg/gomicro](https://github.com/unusualcodeorg/gomicro)
+`goserve` also provides `micro` package to build REST API microservices. Find the microservices version of this blog service project at [github.com/afteracademy/gomicro](https://github.com/afteracademy/gomicro)
 
 [Article - How to Create Microservices — A Practical Guide Using Go](https://medium.com/@janishar.ali/how-to-create-microservices-a-practical-guide-using-go-35445a821513)
 

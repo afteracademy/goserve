@@ -1,6 +1,6 @@
 package main
 
-import "github.com/unusualcodeorg/goserve/startup"
+import "github.com/afteracademy/goserve/startup"
 
 func main() {
 	startup.Server()

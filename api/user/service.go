@@ -1,10 +1,10 @@
 package user
 
 import (
-	"github.com/unusualcodeorg/goserve/api/user/dto"
-	"github.com/unusualcodeorg/goserve/api/user/model"
-	"github.com/unusualcodeorg/goserve/arch/mongo"
-	"github.com/unusualcodeorg/goserve/arch/network"
+	"github.com/afteracademy/goserve/api/user/dto"
+	"github.com/afteracademy/goserve/api/user/model"
+	"github.com/afteracademy/goserve/arch/mongo"
+	"github.com/afteracademy/goserve/arch/network"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"

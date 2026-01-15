@@ -2,11 +2,11 @@ package author
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/unusualcodeorg/goserve/api/blog/dto"
-	userModel "github.com/unusualcodeorg/goserve/api/user/model"
-	coredto "github.com/unusualcodeorg/goserve/arch/dto"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/common"
+	"github.com/afteracademy/goserve/api/blog/dto"
+	userModel "github.com/afteracademy/goserve/api/user/model"
+	coredto "github.com/afteracademy/goserve/arch/dto"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/common"
 )
 
 type controller struct {

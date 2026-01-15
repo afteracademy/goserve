@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/unusualcodeorg/goserve/arch/network"
+	"github.com/afteracademy/goserve/arch/network"
 )
 
 func TestErrorCatcherMiddleware(t *testing.T) {

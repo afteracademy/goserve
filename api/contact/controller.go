@@ -2,9 +2,9 @@ package contact
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/unusualcodeorg/goserve/api/contact/dto"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/utils"
+	"github.com/afteracademy/goserve/api/contact/dto"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/utils"
 )
 
 type controller struct {

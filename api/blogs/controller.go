@@ -2,9 +2,9 @@ package blogs
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/unusualcodeorg/goserve/api/blogs/dto"
-	coredto "github.com/unusualcodeorg/goserve/arch/dto"
-	"github.com/unusualcodeorg/goserve/arch/network"
+	"github.com/afteracademy/goserve/api/blogs/dto"
+	coredto "github.com/afteracademy/goserve/arch/dto"
+	"github.com/afteracademy/goserve/arch/network"
 )
 
 type controller struct {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/unusualcodeorg/goserve/arch/network"
+	"github.com/afteracademy/goserve/arch/network"
 )
 
 type router struct {

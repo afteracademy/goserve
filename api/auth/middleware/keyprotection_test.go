@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/unusualcodeorg/goserve/api/auth"
-	"github.com/unusualcodeorg/goserve/api/auth/model"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/common"
+	"github.com/afteracademy/goserve/api/auth"
+	"github.com/afteracademy/goserve/api/auth/model"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

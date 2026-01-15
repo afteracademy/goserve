@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/gin-gonic/gin"
-	authModel "github.com/unusualcodeorg/goserve/api/auth/model"
-	userModel "github.com/unusualcodeorg/goserve/api/user/model"
+	authModel "github.com/afteracademy/goserve/api/auth/model"
+	userModel "github.com/afteracademy/goserve/api/user/model"
 )
 
 const (

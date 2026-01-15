@@ -1,11 +1,11 @@
 package contact
 
 import (
-	"github.com/unusualcodeorg/goserve/api/contact/dto"
-	"github.com/unusualcodeorg/goserve/api/contact/model"
-	coredto "github.com/unusualcodeorg/goserve/arch/dto"
-	"github.com/unusualcodeorg/goserve/arch/mongo"
-	"github.com/unusualcodeorg/goserve/arch/network"
+	"github.com/afteracademy/goserve/api/contact/dto"
+	"github.com/afteracademy/goserve/api/contact/model"
+	coredto "github.com/afteracademy/goserve/arch/dto"
+	"github.com/afteracademy/goserve/arch/mongo"
+	"github.com/afteracademy/goserve/arch/network"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

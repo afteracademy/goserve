@@ -9,12 +9,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/unusualcodeorg/goserve/api/auth"
-	"github.com/unusualcodeorg/goserve/api/auth/model"
-	"github.com/unusualcodeorg/goserve/api/user"
-	userModel "github.com/unusualcodeorg/goserve/api/user/model"
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/common"
+	"github.com/afteracademy/goserve/api/auth"
+	"github.com/afteracademy/goserve/api/auth/model"
+	"github.com/afteracademy/goserve/api/user"
+	userModel "github.com/afteracademy/goserve/api/user/model"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

@@ -48,7 +48,7 @@ function seed(dbName, user, password) {
 
   db.users.insert({
     name: "Admin",
-    email: "admin@unusualcode.org",
+    email: "admin@afteracademy.com",
     password: "$2a$10$psWmSrmtyZYvtIt/FuJL1OLqsK3iR1fZz5.wUYFuSNkkt.EOX9mLa", // hash of password: changeit
     roles: db.roles
       .find({})

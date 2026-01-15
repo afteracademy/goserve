@@ -1,4 +1,4 @@
-module github.com/unusualcodeorg/goserve
+module github.com/afteracademy/goserve
 
 go 1.22.5
 

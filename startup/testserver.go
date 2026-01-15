@@ -3,8 +3,8 @@ package startup
 import (
 	"net/http/httptest"
 
-	"github.com/unusualcodeorg/goserve/arch/network"
-	"github.com/unusualcodeorg/goserve/config"
+	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/config"
 )
 
 type Teardown = func()
