@@ -99,7 +99,7 @@ go run .tools/copy/envs.go
 - Install Docker and Docker Compose. [Find Instructions Here](https://docs.docker.com/install/).
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 -  You will be able to access the api from http://localhost:8080
 
