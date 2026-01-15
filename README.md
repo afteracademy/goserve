@@ -139,7 +139,7 @@ go run .tools/apigen.go sample
 ```
 
 ## Read the Article to understand this project
-[How to Architect Good Go Backend REST API Services](https://medium.com/@janishar.ali/how-to-architecture-good-go-backend-rest-api-services-14cc4730c05b)
+[How to Architect Good Go Backend REST API Services](https://afteracademy.com/article/how-to-architect-good-go-backend-rest-api-services)
 
 ## How to use this architecture in your project?
 You can use [goservegen](https://github.com/afteracademy/goservegen) CLI to generate starter project for this architecture. 
@@ -467,7 +467,7 @@ func EnsureDbIndexes(db mongo.Database) {
 ## Go Microservices Architecture using goserve
 `goserve` also provides `micro` package to build REST API microservices. Find the microservices version of this blog service project at [github.com/afteracademy/gomicro](https://github.com/afteracademy/gomicro)
 
-[Article - How to Create Microservices — A Practical Guide Using Go](https://medium.com/@janishar.ali/how-to-create-microservices-a-practical-guide-using-go-35445a821513)
+[Article - How to Create Microservices — A Practical Guide Using Go](https://afteracademy.com/article/how-to-create-microservices-a-practical-guide-using-go)
 
 ## Find this project useful ? :heart:
 * Support it by clicking the :star: button on the upper right of this page. :v:
