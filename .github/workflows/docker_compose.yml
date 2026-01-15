@@ -19,11 +19,11 @@ jobs:
     - name: Create pems
       run: go run .tools/rsa/keygen.go
     - name: Build docker images
-      run: docker-compose build
+      run: docker compose build
     - name: Run docker images
-      run: docker-compose up -d
+      run: docker compose up -d
     - name: Run tests
       run: docker exec -t goserver go test -v ./...
     - name: Clean up
       if: success() || failure()
-      run: docker-compose down --rmi all -v --remove-orphans
+      run: docker compose down --rmi all -v --remove-orphans
