@@ -472,10 +472,10 @@ func EnsureDbIndexes(db mongo.Database) {
 ## Find this project useful ? :heart:
 * Support it by clicking the :star: button on the upper right of this page. :v:
 
-## More on YouTube channel - Unusual Code
-Subscribe to the YouTube channel `UnusualCode` for understanding the concepts used in this project:
+## More on YouTube channel - AfterAcademy
+Subscribe to the YouTube channel `AfterAcademy` for understanding the concepts used in this project:
 
-[![YouTube](https://img.shields.io/badge/YouTube-Subscribe-red?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@unusualcode)
+[![YouTube](https://img.shields.io/badge/YouTube-Subscribe-red?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@afteracad)
 
 ## Contribution
 Please feel free to fork it and open a PR.
