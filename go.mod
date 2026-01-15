@@ -1,6 +1,6 @@
 module github.com/afteracademy/goserve
 
-go 1.22.5
+go 1.25.5
 
 require (
 	github.com/gin-gonic/gin v1.10.0
