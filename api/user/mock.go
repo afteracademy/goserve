@@ -11,20 +11,20 @@ type MockService struct {
 	mock.Mock
 }
 
-func (m *MockService) GetUserPrivateProfile(user *model.User) (*dto.InfoPrivateUser, error) {
+func (m *MockService) GetUserPrivateProfile(user *model.User) (*dto.UserPrivate, error) {
 	args := m.Called(user)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*dto.InfoPrivateUser), args.Error(1)
+	return args.Get(0).(*dto.UserPrivate), args.Error(1)
 }
 
-func (m *MockService) GetUserPublicProfile(userId primitive.ObjectID) (*dto.InfoPublicUser, error) {
+func (m *MockService) GetUserPublicProfile(userId primitive.ObjectID) (*dto.UserPublic, error) {
 	args := m.Called(userId)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*dto.InfoPublicUser), args.Error(1)
+	return args.Get(0).(*dto.UserPublic), args.Error(1)
 }
 
 func (m *MockService) FindRoleByCode(code model.RoleCode) (*model.Role, error) {

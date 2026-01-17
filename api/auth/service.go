@@ -4,7 +4,6 @@ import (
 	"crypto/rsa"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/afteracademy/goserve/api/auth/dto"
 	"github.com/afteracademy/goserve/api/auth/model"
 	"github.com/afteracademy/goserve/api/user"
@@ -13,6 +12,7 @@ import (
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/config"
 	"github.com/afteracademy/goserve/utils"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,7 +20,7 @@ import (
 type Service interface {
 	SignUpBasic(signUpDto *dto.SignUpBasic) (*dto.UserAuth, error)
 	SignInBasic(signInDto *dto.SignInBasic) (*dto.UserAuth, error)
-	RenewToken(tokenRefreshDto *dto.TokenRefresh, accessToken string) (*dto.UserTokens, error)
+	RenewToken(tokenRefreshDto *dto.TokenRefresh, accessToken string) (*dto.Tokens, error)
 	SignOut(keystore *model.Keystore) error
 	IsEmailRegisted(email string) bool
 	GenerateToken(user *userModel.User) (string, string, error)
@@ -77,8 +77,8 @@ func NewService(
 	return &service{
 		BaseService:          network.NewBaseService(),
 		userService:          userService,
-		keystoreQueryBuilder: mongo.NewQueryBuilder[model.Keystore](db, model.KeystoreCollectionName),
-		apikeyQueryBuilder:   mongo.NewQueryBuilder[model.ApiKey](db, model.ApiKeyCollectionName),
+		keystoreQueryBuilder: mongo.NewQueryBuilder[model.Keystore](db, model.KeystoreTableName),
+		apikeyQueryBuilder:   mongo.NewQueryBuilder[model.ApiKey](db, model.ApiKeyTableName),
 		// token key
 		rsaPrivateKey: rsaPrivateKey,
 		rsaPublicKey:  rsaPublicKey,

@@ -7,14 +7,15 @@ import (
 )
 
 const UserTableName = "users"
+const UserRoleRelTableName = "user_roles"
 
 type User struct {
 	ID            uuid.UUID
-	Name          string
 	Email         string
+	Name          string
 	Password      *string
 	ProfilePicURL *string
-	Roles         []*Role
+	Roles         []*Role // not stored in DB directly
 	Verified      bool
 	Status        bool
 	CreatedAt     time.Time

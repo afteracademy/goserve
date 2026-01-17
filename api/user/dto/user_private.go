@@ -8,17 +8,17 @@ import (
 )
 
 type UserPrivate struct {
-	ID            uuid.UUID  `json:"id" binding:"required" validate:"required"`
-	Email         string     `json:"email" binding:"required" validate:"required,email"`
-	Name          string     `json:"name" binding:"required" validate:"required"`
-	ProfilePicURL *string    `json:"profilePicUrl,omitempty" validate:"omitempty,url"`
-	Roles         []*Role `json:"roles" validate:"required,dive,required"`
+	ID            uuid.UUID   `json:"id" binding:"required" validate:"required"`
+	Email         string      `json:"email" binding:"required" validate:"required,email"`
+	Name          string      `json:"name" binding:"required" validate:"required"`
+	ProfilePicURL *string     `json:"profilePicUrl,omitempty" validate:"omitempty,url"`
+	Roles         []*RoleInfo `json:"roles" validate:"required,dive,required"`
 }
 
-func NewUserPrivate(user *model.User, roles []*model.Role) *UserPrivate {
-	roless := make([]*Role, len(user.Roles))
-	for i, role := range roles {
-		roless[i] = NewRole(role)
+func NewUserPrivate(user *model.User) *UserPrivate {
+	var roles []*RoleInfo
+	for _, role := range user.Roles {
+		roles = append(roles, NewRoleInfo(role))
 	}
 
 	return &UserPrivate{
@@ -26,7 +26,7 @@ func NewUserPrivate(user *model.User, roles []*model.Role) *UserPrivate {
 		Email:         user.Email,
 		Name:          user.Name,
 		ProfilePicURL: user.ProfilePicURL,
-		Roles:         roless,
+		Roles:         roles,
 	}
 }
 
