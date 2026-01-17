@@ -3,23 +3,21 @@ package model
 import (
 	"time"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/afteracademy/goserve/arch/mongo"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/google/uuid"
 )
 
-const CollectionName = "messages"
+const MessageTableName = "messages"
 
 type Message struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" validate:"-"`
-	Type      string             `bson:"type" validate:"required"`
-	Msg       string             `bson:"msg" validate:"required"`
-	Status    bool               `bson:"status" validate:"required"`
-	CreatedAt time.Time          `bson:"createdAt" validate:"required"`
-	UpdatedAt time.Time          `bson:"updatedAt" validate:"required"`
+	ID        uuid.UUID
+	Type      string
+	Msg       string
+	Status    bool
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
-func NewMessage(msgType string, msgTxt string) (*Message, error) {
+func NewMessage(msgType string, msgTxt string) *Message {
 	time := time.Now()
 	m := Message{
 		Type:      msgType,
@@ -28,21 +26,9 @@ func NewMessage(msgType string, msgTxt string) (*Message, error) {
 		CreatedAt: time,
 		UpdatedAt: time,
 	}
-	if err := m.Validate(); err != nil {
-		return nil, err
-	}
-	return &m, nil
+	return &m
 }
 
 func (message *Message) GetValue() *Message {
 	return message
-}
-
-func (message *Message) Validate() error {
-	validate := validator.New()
-	return validate.Struct(message)
-}
-
-func (*Message) EnsureIndexes(db mongo.Database) {
-
 }

@@ -5,17 +5,17 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/afteracademy/goserve/api/auth"
 	"github.com/afteracademy/goserve/api/auth/model"
 	"github.com/afteracademy/goserve/api/user"
 	userModel "github.com/afteracademy/goserve/api/user/model"
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/common"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestAuthenticationProvider_NoAccessToken(t *testing.T) {
@@ -28,6 +28,7 @@ func TestAuthenticationProvider_NoAccessToken(t *testing.T) {
 		t,
 		NewAuthenticationProvider(mockAuthService, mockUserService),
 		network.MockSuccessMsgHandler("success"),
+		nil,
 	)
 
 	assert.Equal(t, http.StatusUnauthorized, rr.Code)
@@ -47,7 +48,7 @@ func TestAuthenticationProvider_WrongAccessToken(t *testing.T) {
 		t,
 		NewAuthenticationProvider(mockAuthService, mockUserService),
 		network.MockSuccessMsgHandler("success"),
-		primitive.E{Key: network.AuthorizationHeader, Value: token},
+		map[string]string{network.AuthorizationHeader: token},
 	)
 
 	assert.Equal(t, http.StatusUnauthorized, rr.Code)
@@ -68,7 +69,7 @@ func TestAuthenticationProvider_VerifyTokenInvalid(t *testing.T) {
 		t,
 		NewAuthenticationProvider(mockAuthService, mockUserService),
 		network.MockSuccessMsgHandler("success"),
-		primitive.E{Key: network.AuthorizationHeader, Value: token},
+		map[string]string{network.AuthorizationHeader: token},
 	)
 
 	assert.Equal(t, http.StatusUnauthorized, rr.Code)
@@ -91,7 +92,7 @@ func TestAuthenticationProvider_VerifyTokenInvalidClaim(t *testing.T) {
 		t,
 		NewAuthenticationProvider(mockAuthService, mockUserService),
 		network.MockSuccessMsgHandler("success"),
-		primitive.E{Key: network.AuthorizationHeader, Value: token},
+		map[string]string{network.AuthorizationHeader: token},
 	)
 
 	assert.Equal(t, http.StatusUnauthorized, rr.Code)
@@ -114,7 +115,7 @@ func TestAuthenticationProvider_VerifyTokenInvalidClaimUser(t *testing.T) {
 		t,
 		NewAuthenticationProvider(mockAuthService, mockUserService),
 		network.MockSuccessMsgHandler("success"),
-		primitive.E{Key: network.AuthorizationHeader, Value: token},
+		map[string]string{network.AuthorizationHeader: token},
 	)
 
 	assert.Equal(t, http.StatusUnauthorized, rr.Code)
@@ -128,8 +129,8 @@ func TestAuthenticationProvider_VerifyTokenInvalidUser(t *testing.T) {
 	mockAuthService.AssertNotCalled(t, "FindKeystore", mock.Anything)
 
 	token := "Bearer token"
-	userId := primitive.NewObjectID()
-	claims := &jwt.RegisteredClaims{Subject: userId.Hex()}
+	userId := uuid.New()
+	claims := &jwt.RegisteredClaims{Subject: userId.String()}
 
 	mockAuthService.On("VerifyToken", "token").Return(claims, nil)
 	mockAuthService.On("ValidateClaims", claims).Return(true)
@@ -139,7 +140,7 @@ func TestAuthenticationProvider_VerifyTokenInvalidUser(t *testing.T) {
 		t,
 		NewAuthenticationProvider(mockAuthService, mockUserService),
 		network.MockSuccessMsgHandler("success"),
-		primitive.E{Key: network.AuthorizationHeader, Value: token},
+		map[string]string{network.AuthorizationHeader: token},
 	)
 
 	assert.Equal(t, http.StatusUnauthorized, rr.Code)
@@ -152,8 +153,8 @@ func TestAuthenticationProvider_VerifyTokenInvalidKaystore(t *testing.T) {
 	mockUserService := new(user.MockService)
 
 	token := "Bearer token"
-	userId := primitive.NewObjectID()
-	claims := &jwt.RegisteredClaims{ID: "claimId", Subject: userId.Hex()}
+	userId := uuid.New()
+	claims := &jwt.RegisteredClaims{ID: "claimId", Subject: userId.String()}
 	user := &userModel.User{ID: userId}
 
 	mockAuthService.On("VerifyToken", "token").Return(claims, nil)
@@ -165,7 +166,7 @@ func TestAuthenticationProvider_VerifyTokenInvalidKaystore(t *testing.T) {
 		t,
 		NewAuthenticationProvider(mockAuthService, mockUserService),
 		network.MockSuccessMsgHandler("success"),
-		primitive.E{Key: network.AuthorizationHeader, Value: token},
+		map[string]string{network.AuthorizationHeader: token},
 	)
 
 	assert.Equal(t, http.StatusUnauthorized, rr.Code)
@@ -177,9 +178,9 @@ func TestAuthenticationProvider_Success(t *testing.T) {
 	mockUserService := new(user.MockService)
 
 	token := "Bearer token"
-	userId := primitive.NewObjectID()
-	keystoreId := primitive.NewObjectID()
-	claims := &jwt.RegisteredClaims{ID: "claimId", Subject: userId.Hex()}
+	userId := uuid.New()
+	keystoreId := uuid.New()
+	claims := &jwt.RegisteredClaims{ID: "claimId", Subject: userId.String()}
 	user := &userModel.User{ID: userId}
 	keystore := &model.Keystore{ID: keystoreId}
 
@@ -198,7 +199,7 @@ func TestAuthenticationProvider_Success(t *testing.T) {
 		t,
 		NewAuthenticationProvider(mockAuthService, mockUserService),
 		mockHandler,
-		primitive.E{Key: network.AuthorizationHeader, Value: token},
+		map[string]string{network.AuthorizationHeader: token},
 	)
 
 	assert.Equal(t, http.StatusOK, rr.Code)

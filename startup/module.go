@@ -12,8 +12,8 @@ import (
 	"github.com/afteracademy/goserve/api/contact"
 	"github.com/afteracademy/goserve/api/user"
 	coreMW "github.com/afteracademy/goserve/arch/middleware"
-	"github.com/afteracademy/goserve/arch/mongo"
 	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/arch/postgres"
 	"github.com/afteracademy/goserve/arch/redis"
 	"github.com/afteracademy/goserve/config"
 )
@@ -23,7 +23,7 @@ type Module network.Module[module]
 type module struct {
 	Context     context.Context
 	Env         *config.Env
-	DB          mongo.Database
+	DB          postgres.Database
 	Store       redis.Store
 	UserService user.Service
 	AuthService auth.Service
@@ -62,7 +62,7 @@ func (m *module) AuthorizationProvider() network.AuthorizationProvider {
 	return authMW.NewAuthorizationProvider()
 }
 
-func NewModule(context context.Context, env *config.Env, db mongo.Database, store redis.Store) Module {
+func NewModule(context context.Context, env *config.Env, db postgres.Database, store redis.Store) Module {
 	userService := user.NewService(db)
 	authService := auth.NewService(db, env, userService)
 	blogService := blog.NewService(db, store, userService)

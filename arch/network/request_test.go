@@ -16,7 +16,7 @@ func TestReqBody(t *testing.T) {
 		assert.Equal(t, dto.Field, "test")
 	}
 
-	MockTestHandler(t, "POST", "/mock", "/mock", body, mockHandler)
+	MockTestHandler(t, "POST", "/mock", "/mock", body, mockHandler, nil)
 }
 
 func TestReqBody_Error(t *testing.T) {
@@ -29,7 +29,7 @@ func TestReqBody_Error(t *testing.T) {
 		assert.Equal(t, err.Error(), "field is required")
 	}
 
-	MockTestHandler(t, "POST", "/mock", "/mock", body, mockHandler)
+	MockTestHandler(t, "POST", "/mock", "/mock", body, mockHandler, nil)
 }
 
 func TestReqQuery(t *testing.T) {
@@ -39,7 +39,7 @@ func TestReqQuery(t *testing.T) {
 		assert.Equal(t, dto.Field, "test")
 	}
 
-	MockTestHandler(t, "GET", "/mock", "/mock?field=test", "", mockHandler)
+	MockTestHandler(t, "GET", "/mock", "/mock?field=test", "", mockHandler, nil)
 }
 
 func TestReqQuery_Error(t *testing.T) {
@@ -50,5 +50,5 @@ func TestReqQuery_Error(t *testing.T) {
 		assert.Equal(t, err.Error(), "field is required")
 	}
 
-	MockTestHandler(t, "GET", "/mock", "/mock?wrong=test", "", mockHandler)
+	MockTestHandler(t, "GET", "/mock", "/mock?wrong=test", "", mockHandler, nil)
 }

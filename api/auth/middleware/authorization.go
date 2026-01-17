@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/afteracademy/goserve/api/user/model"
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/common"
+	"github.com/gin-gonic/gin"
 )
 
 type authorizationProvider struct {
@@ -30,7 +30,7 @@ func (m *authorizationProvider) Middleware(roleNames ...string) gin.HandlerFunc 
 
 		hasRole := false
 		for _, code := range roleNames {
-			for _, role := range user.RoleDocs {
+			for _, role := range user.Roles {
 				if role.Code == model.RoleCode(code) {
 					hasRole = true
 					break

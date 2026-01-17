@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/mock"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type MockDto struct {
@@ -50,7 +49,7 @@ func MockSuccessDataHandler(msg string, data any) gin.HandlerFunc {
 func MockTestHandler(
 	t *testing.T, httpMethod, path, url, body string,
 	handler gin.HandlerFunc,
-	headers ...primitive.E,
+	headers map[string]string,
 ) *httptest.ResponseRecorder {
 	gin.SetMode(gin.TestMode)
 
@@ -68,8 +67,8 @@ func MockTestHandler(
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	for _, h := range headers {
-		req.Header.Set(h.Key, h.Value.(string))
+	for key, value := range headers {
+		req.Header.Set(key, value)
 	}
 
 	ctx.Request = req
@@ -83,7 +82,7 @@ func MockTestRootMiddleware(
 	t *testing.T,
 	middleware RootMiddleware,
 	handler gin.HandlerFunc,
-	headers ...primitive.E,
+	headers map[string]string,
 ) *httptest.ResponseRecorder {
 	gin.SetMode(gin.TestMode)
 
@@ -102,8 +101,8 @@ func MockTestRootMiddleware(
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	for _, h := range headers {
-		req.Header.Set(h.Key, h.Value.(string))
+	for key, value := range headers {
+		req.Header.Set(key, value)
 	}
 
 	ctx.Request = req
@@ -117,7 +116,7 @@ func MockTestRootMiddlewareWithUrl(
 	t *testing.T, path, url string,
 	middleware RootMiddleware,
 	handler gin.HandlerFunc,
-	headers ...primitive.E,
+	headers map[string]string,
 ) *httptest.ResponseRecorder {
 	gin.SetMode(gin.TestMode)
 
@@ -136,8 +135,8 @@ func MockTestRootMiddlewareWithUrl(
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	for _, h := range headers {
-		req.Header.Set(h.Key, h.Value.(string))
+	for key, value := range headers {
+		req.Header.Set(key, value)
 	}
 
 	ctx.Request = req
@@ -151,7 +150,7 @@ func MockTestAuthenticationProvider(
 	t *testing.T,
 	auth AuthenticationProvider,
 	handler gin.HandlerFunc,
-	headers ...primitive.E,
+	headers map[string]string,
 ) *httptest.ResponseRecorder {
 	gin.SetMode(gin.TestMode)
 
@@ -170,8 +169,8 @@ func MockTestAuthenticationProvider(
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	for _, h := range headers {
-		req.Header.Set(h.Key, h.Value.(string))
+	for key, value := range headers {
+		req.Header.Set(key, value)
 	}
 
 	ctx.Request = req
@@ -187,7 +186,7 @@ func MockTestAuthorizationProvider(
 	auth AuthenticationProvider,
 	authz AuthorizationProvider,
 	handler gin.HandlerFunc,
-	headers ...primitive.E,
+	headers map[string]string,
 ) *httptest.ResponseRecorder {
 	gin.SetMode(gin.TestMode)
 
@@ -211,8 +210,8 @@ func MockTestAuthorizationProvider(
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	for _, h := range headers {
-		req.Header.Set(h.Key, h.Value.(string))
+	for key, value := range headers {
+		req.Header.Set(key, value)
 	}
 
 	ctx.Request = req

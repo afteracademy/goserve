@@ -28,7 +28,7 @@ func (c *controller) MountRoutes(group *gin.RouterGroup) {
 }
 
 func (c *controller) createMessageHandler(ctx *gin.Context) {
-	body, err := network.ReqBody(ctx, &dto.CreateMessage{})
+	body, err := network.ReqBody(ctx, &dto.MessageCreate{})
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
@@ -40,7 +40,7 @@ func (c *controller) createMessageHandler(ctx *gin.Context) {
 		return
 	}
 
-	data, err := utils.MapTo[dto.InfoMessage](msg)
+	data, err := utils.MapTo[dto.Message](msg)
 	if err != nil {
 		c.Send(ctx).InternalServerError("something went wrong", err)
 		return

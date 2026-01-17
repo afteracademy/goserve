@@ -5,13 +5,12 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/afteracademy/goserve/api/auth"
 	"github.com/afteracademy/goserve/api/auth/model"
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/common"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestKeyProtectionMiddleware_NoApiKey(t *testing.T) {
@@ -21,6 +20,7 @@ func TestKeyProtectionMiddleware_NoApiKey(t *testing.T) {
 		t,
 		NewKeyProtection(mockAuthService),
 		network.MockSuccessMsgHandler("success"),
+		nil,
 	)
 
 	assert.Equal(t, http.StatusUnauthorized, rr.Code)
@@ -36,7 +36,7 @@ func TestKeyProtectionMiddleware_WrongApiKey(t *testing.T) {
 		t,
 		NewKeyProtection(mockAuthService),
 		network.MockSuccessMsgHandler("success"),
-		primitive.E{Key: network.ApiKeyHeader, Value: key},
+		map[string]string{network.ApiKeyHeader: key},
 	)
 
 	assert.Equal(t, http.StatusForbidden, rr.Code)
@@ -57,7 +57,7 @@ func TestKeyProtectionMiddleware_CorrectApiKey(t *testing.T) {
 		t,
 		NewKeyProtection(mockAuthService),
 		mockHandler,
-		primitive.E{Key: network.ApiKeyHeader, Value: key},
+		map[string]string{network.ApiKeyHeader: key},
 	)
 
 	assert.Equal(t, http.StatusOK, rr.Code)

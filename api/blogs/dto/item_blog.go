@@ -10,7 +10,7 @@ import (
 )
 
 type ItemBlog struct {
-	ID          primitive.ObjectID `json:"_id" binding:"required" validate:"required"`
+	ID          primitive.ObjectID `json:"id" binding:"required" validate:"required"`
 	Title       string             `json:"title" validate:"required,min=3,max=500"`
 	Description string             `json:"description" validate:"required,min=3,max=2000"`
 	Slug        string             `json:"slug" validate:"required,min=3,max=200"`

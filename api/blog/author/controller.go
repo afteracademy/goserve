@@ -41,7 +41,7 @@ func (c *controller) MountRoutes(group *gin.RouterGroup) {
 }
 
 func (c *controller) postBlogHandler(ctx *gin.Context) {
-	body, err := network.ReqBody(ctx, dto.EmptyCreateBlog())
+	body, err := network.ReqBody(ctx, dto.EmptyBlogCreate())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
@@ -59,7 +59,7 @@ func (c *controller) postBlogHandler(ctx *gin.Context) {
 }
 
 func (c *controller) updateBlogHandler(ctx *gin.Context) {
-	body, err := network.ReqBody(ctx, dto.EmptyUpdateBlog())
+	body, err := network.ReqBody(ctx, dto.EmptyBlogUpdate())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
