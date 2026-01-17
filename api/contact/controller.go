@@ -34,7 +34,7 @@ func (c *controller) createMessageHandler(ctx *gin.Context) {
 		return
 	}
 
-	msg, err := c.service.SaveMessage(body)
+	msg, err := c.service.CreateMessage(body)
 	if err != nil {
 		c.Send(ctx).InternalServerError("something went wrong", err)
 		return

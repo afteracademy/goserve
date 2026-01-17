@@ -1,117 +1,191 @@
 package blog
 
 import (
+	"context"
+	"errors"
 	"time"
 
 	"github.com/afteracademy/goserve/api/blog/dto"
 	"github.com/afteracademy/goserve/api/blog/model"
 	"github.com/afteracademy/goserve/api/user"
-	coredto "github.com/afteracademy/goserve/arch/dto"
-	"github.com/afteracademy/goserve/arch/mongo"
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/arch/redis"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Service interface {
-	SetBlogDtoCacheById(blog *dto.PublicBlog) error
-	GetBlogDtoCacheById(id primitive.ObjectID) (*dto.PublicBlog, error)
-	SetBlogDtoCacheBySlug(blog *dto.PublicBlog) error
-	GetBlogDtoCacheBySlug(slug string) (*dto.PublicBlog, error)
+	SetBlogDtoCacheById(blog *dto.BlogPublic) error
+	GetBlogDtoCacheById(id uuid.UUID) (*dto.BlogPublic, error)
+	SetBlogDtoCacheBySlug(blog *dto.BlogPublic) error
+	GetBlogDtoCacheBySlug(slug string) (*dto.BlogPublic, error)
 	BlogSlugExists(slug string) bool
-	GetPublisedBlogById(id primitive.ObjectID) (*dto.PublicBlog, error)
-	GetPublishedBlogBySlug(slug string) (*dto.PublicBlog, error)
-	getPublicPublishedBlog(filter bson.M) (*dto.PublicBlog, error)
-	getPaginated(filter bson.M, p *coredto.Pagination, opts *options.FindOptions) ([]*dto.InfoBlog, error)
+	GetPublisedBlogById(id uuid.UUID) (*dto.BlogPublic, error)
+	GetPublishedBlogBySlug(slug string) (*dto.BlogPublic, error)
 }
 
 type service struct {
 	network.BaseService
-	blogQueryBuilder mongo.QueryBuilder[model.Blog]
-	publicBlogCache  redis.Cache[dto.PublicBlog]
-	userService      user.Service
+	db              *pgxpool.Pool
+	publicBlogCache redis.Cache[dto.BlogPublic]
+	userService     user.Service
 }
 
-func NewService(db mongo.Database, store redis.Store, userService user.Service) Service {
+func NewService(db *pgxpool.Pool, store redis.Store, userService user.Service) Service {
 	return &service{
-		BaseService:      network.NewBaseService(),
-		blogQueryBuilder: mongo.NewQueryBuilder[model.Blog](db, model.CollectionName),
-		publicBlogCache:  redis.NewCache[dto.PublicBlog](store),
-		userService:      userService,
+		BaseService:     network.NewBaseService(),
+		db:              db,
+		publicBlogCache: redis.NewCache[dto.BlogPublic](store),
+		userService:     userService,
 	}
 }
 
-func (s *service) SetBlogDtoCacheById(blog *dto.PublicBlog) error {
+func (s *service) SetBlogDtoCacheById(blog *dto.BlogPublic) error {
 	key := "blog_" + blog.ID.Hex()
 	return s.publicBlogCache.SetJSON(key, blog, time.Duration(10*time.Minute))
 }
 
-func (s *service) GetBlogDtoCacheById(id primitive.ObjectID) (*dto.PublicBlog, error) {
-	key := "blog_" + id.Hex()
+func (s *service) GetBlogDtoCacheById(id uuid.UUID) (*dto.BlogPublic, error) {
+	key := "blog_" + id.String()
 	return s.publicBlogCache.GetJSON(key)
 }
 
-func (s *service) SetBlogDtoCacheBySlug(blog *dto.PublicBlog) error {
+func (s *service) SetBlogDtoCacheBySlug(blog *dto.BlogPublic) error {
 	key := "blog_" + blog.Slug
 	return s.publicBlogCache.SetJSON(key, blog, time.Duration(10*time.Minute))
 }
 
-func (s *service) GetBlogDtoCacheBySlug(slug string) (*dto.PublicBlog, error) {
+func (s *service) GetBlogDtoCacheBySlug(slug string) (*dto.BlogPublic, error) {
 	key := "blog_" + slug
 	return s.publicBlogCache.GetJSON(key)
 }
 
 func (s *service) BlogSlugExists(slug string) bool {
-	filter := bson.M{"slug": slug}
-	projection := bson.D{{Key: "status", Value: 1}}
-	opts := options.FindOne().SetProjection(projection)
-	_, err := s.blogQueryBuilder.SingleQuery().FindOne(filter, opts)
-	return err == nil
-}
 
-func (s *service) GetPublisedBlogById(id primitive.ObjectID) (*dto.PublicBlog, error) {
-	filter := bson.M{"_id": id, "published": true, "status": true}
-	return s.getPublicPublishedBlog(filter)
-}
+	query := `
+		SELECT EXISTS (
+			SELECT 1
+			FROM blogs
+			WHERE slug = $1
+		)
+	`
 
-func (s *service) GetPublishedBlogBySlug(slug string) (*dto.PublicBlog, error) {
-	filter := bson.M{"slug": slug, "published": true, "status": true}
-	return s.getPublicPublishedBlog(filter)
-}
-
-func (s *service) getPublicPublishedBlog(filter bson.M) (*dto.PublicBlog, error) {
-	projection := bson.D{{Key: "draftText", Value: 0}}
-	opts := options.FindOne().SetProjection(projection)
-	blog, err := s.blogQueryBuilder.SingleQuery().FindOne(filter, opts)
+	var exists bool
+	err := s.db.QueryRow(context.Background(), query, slug).Scan(&exists)
 	if err != nil {
-		return nil, network.NewNotFoundError("blog not found", err)
+		return false
 	}
 
-	author, err := s.userService.FetchUserPublicProfile(blog.Author)
+	return exists
+}
+
+func (s *service) GetPublisedBlogById(blogID uuid.UUID) (*dto.BlogPublic, error) {
+	ctx := context.Background()
+
+	query := `
+		SELECT
+			id,
+			title,
+			description,
+			text,
+			slug,
+			author_id,
+			img_url,
+			score,
+			tags,
+			published_at
+		FROM blogs
+		WHERE id = $1
+		  AND status = TRUE
+		  AND published = TRUE
+	`
+
+	var b model.Blog
+
+	err := s.db.QueryRow(
+		ctx,
+		query,
+		blogID,
+	).Scan(
+		&b.ID,
+		&b.Title,
+		&b.Description,
+		&b.Text,
+		&b.Slug,
+		&b.AuthorID,
+		&b.ImgURL,
+		&b.Score,
+		&b.Tags,
+		&b.PublishedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, network.NewNotFoundError("blog not found", nil)
+		}
+		return nil, err
+	}
+
+	author, err := s.userService.FetchUserPublicProfile(b.AuthorID)
 	if err != nil {
 		return nil, network.NewNotFoundError("author not found", err)
 	}
 
-	return dto.NewPublicBlog(blog, author)
+	return dto.NewBlogPublic(&b, author)
 }
 
-func (s *service) getPaginated(filter bson.M, p *coredto.Pagination, opts *options.FindOptions) ([]*dto.InfoBlog, error) {
-	blogs, err := s.blogQueryBuilder.SingleQuery().FindPaginated(filter, p.Page, p.Limit, opts)
+func (s *service) GetPublishedBlogBySlug(slug string) (*dto.BlogPublic, error) {
+	ctx := context.Background()
+
+	query := `
+		SELECT
+			id,
+			title,
+			description,
+			text,
+			slug,
+			author_id,
+			img_url,
+			score,
+			tags,
+			published_at
+		FROM blogs
+		WHERE slug = $1
+		  AND status = TRUE
+		  AND published = TRUE
+	`
+
+	var b model.Blog
+
+	err := s.db.QueryRow(
+		ctx,
+		query,
+		slug,
+	).Scan(
+		&b.ID,
+		&b.Title,
+		&b.Description,
+		&b.Text,
+		&b.Slug,
+		&b.AuthorID,
+		&b.ImgURL,
+		&b.Score,
+		&b.Tags,
+		&b.PublishedAt,
+	)
+
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, network.NewNotFoundError("blog not found", nil)
+		}
 		return nil, err
 	}
 
-	dtos := make([]*dto.InfoBlog, len(blogs))
-
-	for i, b := range blogs {
-		d, err := dto.NewInfoBlog(b)
-		if err != nil {
-			return nil, err
-		}
-		dtos[i] = d
+	author, err := s.userService.FetchUserPublicProfile(b.AuthorID)
+	if err != nil {
+		return nil, network.NewNotFoundError("author not found", err)
 	}
 
-	return dtos, nil
+	return dto.NewBlogPublic(&b, author)
 }

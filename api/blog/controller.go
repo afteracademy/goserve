@@ -1,9 +1,9 @@
 package blog
 
 import (
-	"github.com/gin-gonic/gin"
 	coredto "github.com/afteracademy/goserve/arch/dto"
 	"github.com/afteracademy/goserve/arch/network"
+	"github.com/gin-gonic/gin"
 )
 
 type controller struct {
@@ -28,19 +28,19 @@ func (c *controller) MountRoutes(group *gin.RouterGroup) {
 }
 
 func (c *controller) getBlogByIdHandler(ctx *gin.Context) {
-	mongoId, err := network.ReqParams(ctx, coredto.EmptyMongoId())
+	uuidParam, err := network.ReqParams(ctx, coredto.EmptyUUID())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
 	}
 
-	blog, err := c.service.GetBlogDtoCacheById(mongoId.ID)
+	blog, err := c.service.GetBlogDtoCacheById(uuidParam.ID)
 	if err == nil {
 		c.Send(ctx).SuccessDataResponse("success", blog)
 		return
 	}
 
-	blog, err = c.service.GetPublisedBlogById(mongoId.ID)
+	blog, err = c.service.GetPublisedBlogById(uuidParam.ID)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return

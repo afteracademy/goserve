@@ -1,128 +1,304 @@
 package editor
 
 import (
+	"context"
+	"errors"
 	"time"
 
 	"github.com/afteracademy/goserve/api/blog/dto"
 	"github.com/afteracademy/goserve/api/blog/model"
 	"github.com/afteracademy/goserve/api/user"
-	userModel "github.com/afteracademy/goserve/api/user/model"
 	coredto "github.com/afteracademy/goserve/arch/dto"
-	"github.com/afteracademy/goserve/arch/mongo"
 	"github.com/afteracademy/goserve/arch/network"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Service interface {
-	GetBlogById(id primitive.ObjectID) (*dto.PrivateBlog, error)
-	BlogPublication(blogId primitive.ObjectID, editor *userModel.User, publish bool) error
-	GetPaginatedPublished(p *coredto.Pagination) ([]*dto.InfoBlog, error)
-	GetPaginatedSubmitted(p *coredto.Pagination) ([]*dto.InfoBlog, error)
+	GetBlogById(id uuid.UUID) (*dto.BlogPrivate, error)
+	BlogPublication(blogId uuid.UUID, publish bool) error
+	GetPaginatedPublished(p *coredto.Pagination) ([]*dto.BlogInfo, error)
+	GetPaginatedSubmitted(p *coredto.Pagination) ([]*dto.BlogInfo, error)
 }
 
 type service struct {
 	network.BaseService
-	blogQueryBuilder mongo.QueryBuilder[model.Blog]
-	userService      user.Service
+	db          *pgxpool.Pool
+	userService user.Service
 }
 
-func NewService(db mongo.Database, userService user.Service) Service {
+func NewService(db *pgxpool.Pool, userService user.Service) Service {
 	return &service{
-		BaseService:      network.NewBaseService(),
-		blogQueryBuilder: mongo.NewQueryBuilder[model.Blog](db, model.CollectionName),
-		userService:      userService,
+		BaseService: network.NewBaseService(),
+		db:          db,
+		userService: userService,
 	}
 }
 
-func (s *service) BlogPublication(blogId primitive.ObjectID, editor *userModel.User, publish bool) error {
-	filter := bson.M{"_id": blogId, "status": true}
-	blog, err := s.blogQueryBuilder.SingleQuery().FindOne(filter, nil)
+func (s *service) BlogPublication(
+	blogID uuid.UUID,
+	publish bool,
+) error {
+	ctx := context.Background()
+
+	selectQuery := `
+		SELECT
+			published,
+			submitted,
+			drafted,
+			draft_text,
+			published_at
+		FROM blogs
+		WHERE id = $1
+		  AND status = TRUE
+	`
+
+	var (
+		published   bool
+		submitted   bool
+		drafted     bool
+		draftText   string
+		publishedAt *time.Time
+	)
+
+	err := s.db.QueryRow(
+		ctx,
+		selectQuery,
+		blogID,
+	).Scan(
+		&published,
+		&submitted,
+		&drafted,
+		&draftText,
+		&publishedAt,
+	)
+
 	if err != nil {
-		return network.NewNotFoundError("blog for _id "+blogId.Hex()+" not found", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return network.NewNotFoundError(
+				"blog for id "+blogID.String()+" not found",
+				nil,
+			)
+		}
+		return err
 	}
 
 	if publish {
-		if blog.Published {
-			return network.NewBadRequestError("blog for _id "+blogId.Hex()+" is already published", err)
+		if published {
+			return network.NewBadRequestError(
+				"blog for id "+blogID.String()+" is already published",
+				nil,
+			)
 		}
-		if !blog.Submitted {
-			return network.NewBadRequestError("blog for _id "+blogId.Hex()+" is not submitted", err)
+		if !submitted {
+			return network.NewBadRequestError(
+				"blog for id "+blogID.String()+" is not submitted",
+				nil,
+			)
 		}
 	} else {
-		if !blog.Published {
-			return network.NewBadRequestError("blog for _id "+blogId.Hex()+" is not published", err)
+		if !published {
+			return network.NewBadRequestError(
+				"blog for id "+blogID.String()+" is not published",
+				nil,
+			)
 		}
 	}
 
-	var update bson.M
+	updateQuery := `
+		UPDATE blogs
+		SET
+			drafted = $1,
+			submitted = $2,
+			published = $3,
+			text = $4,
+			published_at = $5,
+			updated_at = CURRENT_TIMESTAMP
+		WHERE id = $6
+		  AND status = TRUE
+	`
+
+	var text *string
 
 	if publish {
-		if blog.PublishedAt == nil {
+		if publishedAt == nil {
 			now := time.Now()
-			blog.PublishedAt = &now
+			publishedAt = &now
 		}
-		update = bson.M{"drafted": false, "submitted": false, "published": true, "text": blog.DraftText, "publishedAt": blog.PublishedAt}
+		text = &draftText
 	} else {
-		update = bson.M{"drafted": true, "submitted": false, "published": false}
+		publishedAt = nil
+		text = nil
 	}
 
-	update["updatedBy"] = editor.ID
-	update["updatedAt"] = time.Now()
-
-	updated := bson.M{"$set": update}
-	result, err := s.blogQueryBuilder.SingleQuery().UpdateOne(filter, updated)
+	tag, err := s.db.Exec(
+		ctx,
+		updateQuery,
+		!publish,
+		false,
+		publish,
+		text,
+		publishedAt,
+		blogID,
+	)
 	if err != nil {
 		return err
 	}
 
-	if result.MatchedCount == 0 {
+	if tag.RowsAffected() == 0 {
 		return network.NewNotFoundError("blog not found", nil)
 	}
 
 	return nil
 }
 
-func (s *service) GetBlogById(id primitive.ObjectID) (*dto.PrivateBlog, error) {
-	filter := bson.M{"_id": id, "status": true}
-	blog, err := s.blogQueryBuilder.SingleQuery().FindOne(filter, nil)
+func (s *service) GetBlogById(id uuid.UUID) (*dto.BlogPrivate, error) {
+	ctx := context.Background()
+
+	query := `
+		SELECT
+			id,
+			title,
+			description,
+			text,
+			draft_text,
+			tags,
+			author_id,
+			img_url,
+			slug,
+			score,
+			submitted,
+			drafted,
+			published,
+			status,
+			published_at,
+			created_at,
+			updated_at
+		FROM blogs
+		WHERE id = $1
+		  AND status = TRUE
+	`
+
+	var b model.Blog
+
+	err := s.db.QueryRow(ctx, query, id).
+		Scan(
+			&b.ID,
+			&b.Title,
+			&b.Description,
+			&b.Text,
+			&b.DraftText,
+			&b.Tags,
+			&b.AuthorID,
+			&b.ImgURL,
+			&b.Slug,
+			&b.Score,
+			&b.Submitted,
+			&b.Drafted,
+			&b.Published,
+			&b.Status,
+			&b.PublishedAt,
+			&b.CreatedAt,
+			&b.UpdatedAt,
+		)
+
 	if err != nil {
 		return nil, err
 	}
 
-	author, err := s.userService.FetchUserPublicProfile(blog.Author)
+	author, err := s.userService.FetchUserById(b.AuthorID)
+	if err != nil {
+		return nil, network.NewInternalServerError("failed to fetch author", err)
+	}
+	if author == nil {
+		return nil, network.NewNotFoundError("author not found", nil)
+	}
+
+	return dto.NewBlogPrivate(&b, author)
+}
+
+func (s *service) GetPaginatedPublished(p *coredto.Pagination) ([]*dto.BlogInfo, error) {
+	query := `
+		SELECT
+			id,
+			title,
+			description,
+			slug,
+			img_url,
+			score,
+			tags,
+			published_at
+		FROM blogs
+		WHERE status = TRUE
+		  AND published = TRUE
+		ORDER BY published_at DESC
+		LIMIT $1 OFFSET $2
+	`
+	return s.getPaginated(query, p)
+}
+
+func (s *service) GetPaginatedSubmitted(p *coredto.Pagination) ([]*dto.BlogInfo, error) {
+	query := `
+		SELECT
+			id,
+			title,
+			description,
+			slug,
+			img_url,
+			score,
+			tags,
+			published_at
+		FROM blogs
+		WHERE status = TRUE
+		  AND submitted = TRUE
+		ORDER BY published_at DESC
+		LIMIT $1 OFFSET $2
+	`
+	return s.getPaginated(query, p)
+}
+
+func (s *service) getPaginated(
+	query string,
+	p *coredto.Pagination,
+) ([]*dto.BlogInfo, error) {
+
+	ctx := context.Background()
+	offset := (p.Page - 1) * p.Limit
+
+	rows, err := s.db.Query(ctx, query, p.Limit, offset)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	return dto.NewPrivateBlog(blog, author)
-}
+	var dtos []*dto.BlogInfo
 
-func (s *service) GetPaginatedPublished(p *coredto.Pagination) ([]*dto.InfoBlog, error) {
-	filter := bson.M{"status": true, "published": true}
-	return s.getPaginated(filter, p, nil)
-}
+	for rows.Next() {
+		var b model.Blog
+		if err := rows.Scan(
+			&b.ID,
+			&b.Title,
+			&b.Description,
+			&b.Slug,
+			&b.ImgURL,
+			&b.Score,
+			&b.Tags,
+			&b.PublishedAt,
+		); err != nil {
+			return nil, err
+		}
 
-func (s *service) GetPaginatedSubmitted(p *coredto.Pagination) ([]*dto.InfoBlog, error) {
-	filter := bson.M{"status": true, "submitted": true}
-	return s.getPaginated(filter, p, nil)
-}
-
-func (s *service) getPaginated(filter bson.M, p *coredto.Pagination, opts *options.FindOptions) ([]*dto.InfoBlog, error) {
-	blogs, err := s.blogQueryBuilder.SingleQuery().FindPaginated(filter, p.Page, p.Limit, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	dtos := make([]*dto.InfoBlog, len(blogs))
-
-	for i, b := range blogs {
-		d, err := dto.NewInfoBlog(b)
+		d, err := dto.NewBlogInfo(&b)
 		if err != nil {
 			return nil, err
 		}
-		dtos[i] = d
+
+		dtos = append(dtos, d)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return dtos, nil

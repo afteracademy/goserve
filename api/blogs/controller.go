@@ -1,10 +1,10 @@
 package blogs
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/afteracademy/goserve/api/blogs/dto"
 	coredto "github.com/afteracademy/goserve/arch/dto"
 	"github.com/afteracademy/goserve/arch/network"
+	"github.com/gin-gonic/gin"
 )
 
 type controller struct {
@@ -69,24 +69,24 @@ func (c *controller) getTaggedBlogsHandler(ctx *gin.Context) {
 }
 
 func (c *controller) getSimilarBlogsHandler(ctx *gin.Context) {
-	mongoId, err := network.ReqParams(ctx, coredto.EmptyMongoId())
+	uuidParam, err := network.ReqParams(ctx, coredto.EmptyUUID())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
 	}
 
-	blogs, err := c.service.GetSimilarBlogsDtoCache(mongoId.ID)
+	blogs, err := c.service.GetSimilarBlogsDtoCache(uuidParam.ID)
 	if err == nil {
 		c.Send(ctx).SuccessDataResponse("success", blogs)
 		return
 	}
 
-	blogs, err = c.service.GetSimilarBlogs(mongoId.ID)
+	blogs, err = c.service.GetSimilarBlogs(uuidParam.ID)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
 
 	c.Send(ctx).SuccessDataResponse("success", blogs)
-	c.service.SetSimilarBlogsDtoCache(mongoId.ID, blogs)
+	c.service.SetSimilarBlogsDtoCache(uuidParam.ID, blogs)
 }

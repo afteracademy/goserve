@@ -269,17 +269,6 @@ func (s *service) GenerateKeystore(
 	return s.CreateKeystore(context.Background(), client, primaryKey, secondaryKey)
 }
 
-func (s *service) FetchKeystore(
-	client *userModel.User,
-	primaryKey string,
-) (*model.Keystore, error) {
-	return s.FindKeystore(context.Background(), client, primaryKey)
-}
-
-func (s *service) FetchApiKey(key string) (*model.ApiKey, error) {
-	return s.FindApiKey(context.Background(), key)
-}
-
 func (s *service) CreateKeystore(
 	ctx context.Context,
 	client *userModel.User,
@@ -321,12 +310,11 @@ func (s *service) CreateKeystore(
 	return &ks, nil
 }
 
-func (s *service) FindKeystore(
-	ctx context.Context,
+func (s *service) FetchKeystore(
 	client *userModel.User,
 	primaryKey string,
 ) (*model.Keystore, error) {
-
+	ctx := context.Background()
 	query := `
 		SELECT
 			id,
@@ -467,11 +455,10 @@ func (s *service) ValidateClaims(claims *jwt.RegisteredClaims) bool {
 	return utils.IsValidObjectID(claims.Subject)
 }
 
-func (s *service) FindApiKey(
-	ctx context.Context,
+func (s *service) FetchApiKey(
 	key string,
 ) (*model.ApiKey, error) {
-
+	ctx := context.Background()
 	query := `
 		SELECT
 			id,

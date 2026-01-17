@@ -12,7 +12,7 @@ import (
 )
 
 type Service interface {
-	SaveMessage(d *dto.MessageCreate) (*model.Message, error)
+	CreateMessage(d *dto.MessageCreate) (*model.Message, error)
 	FetchMessage(id uuid.UUID) (*model.Message, error)
 	FetchPaginatedMessage(p *coredto.Pagination) ([]*model.Message, error)
 }
@@ -29,23 +29,10 @@ func NewService(db *pgxpool.Pool) Service {
 	}
 }
 
-func (s *service) SaveMessage(d *dto.MessageCreate) (*model.Message, error) {
-	return s.CreateMessage(context.Background(), d)
-}
-
-func (s *service) FetchMessage(id uuid.UUID) (*model.Message, error) {
-	return s.FindMessage(context.Background(), id)
-}
-
-func (s *service) FetchPaginatedMessage(p *coredto.Pagination) ([]*model.Message, error) {
-	return s.FindPaginatedMessage(context.Background(), p)
-}
-
 func (s *service) CreateMessage(
-	ctx context.Context,
 	dto *dto.MessageCreate,
 ) (*model.Message, error) {
-
+	ctx := context.Background()
 	msg := model.Message{}
 
 	query := `
@@ -84,11 +71,10 @@ func (s *service) CreateMessage(
 	return &msg, nil
 }
 
-func (s *service) FindMessage(
-	ctx context.Context,
+func (s *service) FetchMessage(
 	id uuid.UUID,
 ) (*model.Message, error) {
-
+	ctx := context.Background()
 	query := `
 		SELECT
 			id,
@@ -120,11 +106,10 @@ func (s *service) FindMessage(
 	return &m, nil
 }
 
-func (s *service) FindPaginatedMessage(
-	ctx context.Context,
+func (s *service) FetchPaginatedMessage(
 	p *coredto.Pagination,
 ) ([]*model.Message, error) {
-
+	ctx := context.Background()
 	offset := (p.Page - 1) * p.Limit
 
 	query := `

@@ -77,7 +77,7 @@ func (c *controller) updateBlogHandler(ctx *gin.Context) {
 }
 
 func (c *controller) getBlogHandler(ctx *gin.Context) {
-	mongoId, err := network.ReqParams(ctx, coredto.EmptyMongoId())
+	uuidParam, err := network.ReqParams(ctx, coredto.EmptyUUID())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
@@ -85,9 +85,9 @@ func (c *controller) getBlogHandler(ctx *gin.Context) {
 
 	user := c.MustGetUser(ctx)
 
-	blog, err := c.service.GetBlogById(mongoId.ID, user)
+	blog, err := c.service.GetBlogById(uuidParam.ID, user)
 	if err != nil {
-		c.Send(ctx).NotFoundError(mongoId.Id+" not found", err)
+		c.Send(ctx).NotFoundError(uuidParam.ID.String()+" not found", err)
 		return
 	}
 
@@ -95,7 +95,7 @@ func (c *controller) getBlogHandler(ctx *gin.Context) {
 }
 
 func (c *controller) submitBlogHandler(ctx *gin.Context) {
-	mongoId, err := network.ReqParams(ctx, coredto.EmptyMongoId())
+	uuidParam, err := network.ReqParams(ctx, coredto.EmptyUUID())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
@@ -103,7 +103,7 @@ func (c *controller) submitBlogHandler(ctx *gin.Context) {
 
 	user := c.MustGetUser(ctx)
 
-	err = c.service.BlogSubmission(mongoId.ID, user, true)
+	err = c.service.BlogSubmission(uuidParam.ID, user, true)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
@@ -113,7 +113,7 @@ func (c *controller) submitBlogHandler(ctx *gin.Context) {
 }
 
 func (c *controller) withdrawBlogHandler(ctx *gin.Context) {
-	mongoId, err := network.ReqParams(ctx, coredto.EmptyMongoId())
+	uuidParam, err := network.ReqParams(ctx, coredto.EmptyUUID())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
@@ -121,7 +121,7 @@ func (c *controller) withdrawBlogHandler(ctx *gin.Context) {
 
 	user := c.MustGetUser(ctx)
 
-	err = c.service.BlogSubmission(mongoId.ID, user, false)
+	err = c.service.BlogSubmission(uuidParam.ID, user, false)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
@@ -131,7 +131,7 @@ func (c *controller) withdrawBlogHandler(ctx *gin.Context) {
 }
 
 func (c *controller) deleteBlogHandler(ctx *gin.Context) {
-	mongoId, err := network.ReqParams(ctx, coredto.EmptyMongoId())
+	uuidParam, err := network.ReqParams(ctx, coredto.EmptyUUID())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
@@ -139,7 +139,7 @@ func (c *controller) deleteBlogHandler(ctx *gin.Context) {
 
 	user := c.MustGetUser(ctx)
 
-	err = c.service.DeactivateBlog(mongoId.ID, user)
+	err = c.service.DeactivateBlog(uuidParam.ID, user)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return

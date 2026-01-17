@@ -1,114 +1,288 @@
 package blogs
 
 import (
+	"context"
+	"errors"
 	"time"
 
 	"github.com/afteracademy/goserve/api/blog/model"
 	"github.com/afteracademy/goserve/api/blogs/dto"
 	coredto "github.com/afteracademy/goserve/arch/dto"
-	"github.com/afteracademy/goserve/arch/mongo"
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/arch/redis"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Service interface {
-	SetSimilarBlogsDtoCache(blogId primitive.ObjectID, blogs []*dto.ItemBlog) error
-	GetSimilarBlogsDtoCache(blogId primitive.ObjectID) ([]*dto.ItemBlog, error)
-	GetPaginatedLatestBlogs(p *coredto.Pagination) ([]*dto.ItemBlog, error)
-	GetPaginatedTaggedBlogs(tag string, p *coredto.Pagination) ([]*dto.ItemBlog, error)
-	GetSimilarBlogs(blogId primitive.ObjectID) ([]*dto.ItemBlog, error)
-	getPublicPaginated(filter bson.M, p *coredto.Pagination) ([]*dto.ItemBlog, error)
-	getPaginated(filter bson.M, p *coredto.Pagination, opts *options.FindOptions) ([]*dto.ItemBlog, error)
+	SetSimilarBlogsDtoCache(blogId uuid.UUID, blogs []*dto.BlogItem) error
+	GetSimilarBlogsDtoCache(blogId uuid.UUID) ([]*dto.BlogItem, error)
+	GetPaginatedLatestBlogs(p *coredto.Pagination) ([]*dto.BlogItem, error)
+	GetPaginatedTaggedBlogs(tag string, p *coredto.Pagination) ([]*dto.BlogItem, error)
+	GetSimilarBlogs(blogId uuid.UUID) ([]*dto.BlogItem, error)
 }
 
 type service struct {
 	network.BaseService
-	blogQueryBuilder mongo.QueryBuilder[model.Blog]
-	itemBlogCache    redis.Cache[dto.ItemBlog]
+	db            *pgxpool.Pool
+	itemBlogCache redis.Cache[dto.BlogItem]
 }
 
-func NewService(db mongo.Database, store redis.Store) Service {
+func NewService(db *pgxpool.Pool, store redis.Store) Service {
 	return &service{
-		BaseService:      network.NewBaseService(),
-		blogQueryBuilder: mongo.NewQueryBuilder[model.Blog](db, model.CollectionName),
-		itemBlogCache:    redis.NewCache[dto.ItemBlog](store),
+		BaseService:   network.NewBaseService(),
+		db:            db,
+		itemBlogCache: redis.NewCache[dto.BlogItem](store),
 	}
 }
 
-func (s *service) SetSimilarBlogsDtoCache(blogId primitive.ObjectID, blogs []*dto.ItemBlog) error {
-	key := "similar_blogs_" + blogId.Hex()
+func (s *service) SetSimilarBlogsDtoCache(blogId uuid.UUID, blogs []*dto.BlogItem) error {
+	key := "similar_blogs_" + blogId.String()
 	return s.itemBlogCache.SetJSONList(key, blogs, 6*time.Hour)
 }
 
-func (s *service) GetSimilarBlogsDtoCache(blogId primitive.ObjectID) ([]*dto.ItemBlog, error) {
-	key := "similar_blogs_" + blogId.Hex()
+func (s *service) GetSimilarBlogsDtoCache(blogId uuid.UUID) ([]*dto.BlogItem, error) {
+	key := "similar_blogs_" + blogId.String()
 	return s.itemBlogCache.GetJSONList(key)
 }
 
-func (s *service) GetPaginatedLatestBlogs(p *coredto.Pagination) ([]*dto.ItemBlog, error) {
-	filter := bson.M{"status": true, "published": true}
-	return s.getPublicPaginated(filter, p)
+func (s *service) GetPaginatedLatestBlogs(p *coredto.Pagination) ([]*dto.BlogItem, error) {
+	query := `
+		SELECT
+			id,
+			title,
+			description,
+			slug,
+			img_url,
+			score,
+			tags,
+			published_at
+		FROM blogs
+		WHERE status = TRUE
+		  AND published = TRUE
+		ORDER BY published_at DESC, score DESC
+		LIMIT $1 OFFSET $2
+	`
+	return s.getPaginated(query, p)
 }
 
-func (s *service) GetPaginatedTaggedBlogs(tag string, p *coredto.Pagination) ([]*dto.ItemBlog, error) {
-	filter := bson.M{"status": true, "published": true, "tags": tag}
-	return s.getPublicPaginated(filter, p)
-}
+func (s *service) GetPaginatedTaggedBlogs(tag string, p *coredto.Pagination) ([]*dto.BlogItem, error) {
+	query := `
+		SELECT
+			id,
+			title,
+			description,
+			slug,
+			img_url,
+			score,
+			tags,
+			published_at
+		FROM blogs
+		WHERE status = TRUE
+		  AND published = TRUE
+			AND $1 = ANY(tags)
+		ORDER BY published_at DESC, score DESC
+		LIMIT $2 OFFSET $3
+	`
+	ctx := context.Background()
+	offset := (p.Page - 1) * p.Limit
 
-func (s *service) GetSimilarBlogs(blogId primitive.ObjectID) ([]*dto.ItemBlog, error) {
-	filter := bson.M{"_id": blogId, "published": true, "status": true}
-	blog, err := s.blogQueryBuilder.SingleQuery().FindOne(filter, nil)
-	if err != nil {
-		return nil, network.NewNotFoundError("blog not found", err)
-	}
-
-	filter = bson.M{
-		"$text":     bson.M{"$search": blog.Title, "$caseSensitive": false},
-		"status":    true,
-		"published": true,
-		"_id":       bson.M{"$ne": blog.ID},
-	}
-
-	opts := options.Find()
-	opts.SetProjection(bson.M{"similarity": bson.M{"$meta": "textScore"}})
-	opts.SetSort(bson.D{
-		{Key: "similarity", Value: bson.M{"$meta": "textScore"}},
-		{Key: "updatedAt", Value: -1},
-		{Key: "score", Value: -1},
-	})
-
-	pagination := &coredto.Pagination{
-		Page:  1,
-		Limit: 6,
-	}
-
-	return s.getPaginated(filter, pagination, opts)
-}
-
-func (s *service) getPublicPaginated(filter bson.M, p *coredto.Pagination) ([]*dto.ItemBlog, error) {
-	projection := bson.D{{Key: "draftText", Value: 0}}
-	opts := options.Find().SetProjection(projection)
-	opts.SetSort(bson.D{{Key: "updatedAt", Value: -1}, {Key: "score", Value: -1}})
-	return s.getPaginated(filter, p, opts)
-}
-
-func (s *service) getPaginated(filter bson.M, p *coredto.Pagination, opts *options.FindOptions) ([]*dto.ItemBlog, error) {
-	blogs, err := s.blogQueryBuilder.SingleQuery().FindPaginated(filter, p.Page, p.Limit, opts)
+	rows, err := s.db.Query(ctx, query, tag, p.Limit, offset)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	dtos := make([]*dto.ItemBlog, len(blogs))
+	var dtos []*dto.BlogItem
 
-	for i, b := range blogs {
-		d, err := dto.NewItemBlog(b)
+	for rows.Next() {
+		var b model.Blog
+		if err := rows.Scan(
+			&b.ID,
+			&b.Title,
+			&b.Description,
+			&b.Slug,
+			&b.ImgURL,
+			&b.Score,
+			&b.Tags,
+			&b.PublishedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		d, err := dto.NewBlogItem(&b)
 		if err != nil {
 			return nil, err
 		}
-		dtos[i] = d
+
+		dtos = append(dtos, d)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return dtos, nil
+}
+
+func (s *service) GetSimilarBlogs(
+	blogID uuid.UUID,
+) ([]*dto.BlogItem, error) {
+
+	ctx := context.Background()
+	var title string
+
+	err := s.db.QueryRow(
+		ctx,
+		`
+		SELECT title
+		FROM blogs
+		WHERE id = $1
+		  AND published = TRUE
+		  AND status = TRUE
+		`,
+		blogID,
+	).Scan(&title)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, network.NewNotFoundError("blog not found", nil)
+		}
+		return nil, err
+	}
+
+	query := `
+		SELECT
+			id,
+			title,
+			description,
+			slug,
+			img_url,
+			score,
+			tags,
+			published_at,
+			ts_rank(
+				to_tsvector('english', title),
+				plainto_tsquery('english', $1)
+			) AS similarity
+		FROM blogs
+		WHERE to_tsvector('english', title) @@ plainto_tsquery('english', $1)
+		  AND published = TRUE
+		  AND status = TRUE
+		  AND id <> $2
+		ORDER BY
+			similarity DESC,
+			updated_at DESC,
+			score DESC
+		LIMIT 6
+	`
+
+	rows, err := s.db.Query(ctx, query, title, blogID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []*dto.BlogItem
+
+	for rows.Next() {
+		var (
+			b          model.Blog
+			similarity float32
+		)
+
+		if err := rows.Scan(
+			&b.ID,
+			&b.Title,
+			&b.Description,
+			&b.Slug,
+			&b.ImgURL,
+			&b.Score,
+			&b.Tags,
+			&b.PublishedAt,
+			&similarity,
+		); err != nil {
+			return nil, err
+		}
+
+		item, err := dto.NewBlogItem(&b)
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (s *service) getPublicPaginated(filter bson.M, p *coredto.Pagination) ([]*dto.BlogItem, error) {
+	query := `
+		SELECT
+			id,
+			title,
+			description,
+			slug,
+			img_url,
+			score,
+			tags,
+			published_at
+		FROM blogs
+		WHERE status = TRUE
+		  AND submitted = TRUE
+		ORDER BY published_at DESC, score DESC
+		LIMIT $1 OFFSET $2
+	`
+	return s.getPaginated(query, p)
+}
+
+func (s *service) getPaginated(
+	query string,
+	p *coredto.Pagination,
+) ([]*dto.BlogItem, error) {
+
+	ctx := context.Background()
+	offset := (p.Page - 1) * p.Limit
+
+	rows, err := s.db.Query(ctx, query, p.Limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var dtos []*dto.BlogItem
+
+	for rows.Next() {
+		var b model.Blog
+		if err := rows.Scan(
+			&b.ID,
+			&b.Title,
+			&b.Description,
+			&b.Slug,
+			&b.ImgURL,
+			&b.Score,
+			&b.Tags,
+			&b.PublishedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		d, err := dto.NewBlogItem(&b)
+		if err != nil {
+			return nil, err
+		}
+
+		dtos = append(dtos, d)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return dtos, nil

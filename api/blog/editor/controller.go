@@ -1,11 +1,11 @@
 package editor
 
 import (
-	"github.com/gin-gonic/gin"
 	userModel "github.com/afteracademy/goserve/api/user/model"
 	coredto "github.com/afteracademy/goserve/arch/dto"
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/common"
+	"github.com/gin-gonic/gin"
 )
 
 type controller struct {
@@ -36,15 +36,15 @@ func (c *controller) MountRoutes(group *gin.RouterGroup) {
 }
 
 func (c *controller) getBlogHandler(ctx *gin.Context) {
-	mongoId, err := network.ReqParams(ctx, coredto.EmptyMongoId())
+	uuidParam, err := network.ReqParams(ctx, coredto.EmptyUUID())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
 	}
 
-	blog, err := c.service.GetBlogById(mongoId.ID)
+	blog, err := c.service.GetBlogById(uuidParam.ID)
 	if err != nil {
-		c.Send(ctx).NotFoundError(mongoId.Id+" not found", err)
+		c.Send(ctx).NotFoundError(uuidParam.Id+" not found", err)
 		return
 	}
 
@@ -52,15 +52,13 @@ func (c *controller) getBlogHandler(ctx *gin.Context) {
 }
 
 func (c *controller) publishBlogHandler(ctx *gin.Context) {
-	mongoId, err := network.ReqParams(ctx, coredto.EmptyMongoId())
+	uuidParam, err := network.ReqParams(ctx, coredto.EmptyUUID())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
 	}
 
-	user := c.MustGetUser(ctx)
-
-	err = c.service.BlogPublication(mongoId.ID, user, true)
+	err = c.service.BlogPublication(uuidParam.ID, true)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
@@ -70,15 +68,13 @@ func (c *controller) publishBlogHandler(ctx *gin.Context) {
 }
 
 func (c *controller) unpublishBlogHandler(ctx *gin.Context) {
-	mongoId, err := network.ReqParams(ctx, coredto.EmptyMongoId())
+	uuidParam, err := network.ReqParams(ctx, coredto.EmptyUUID())
 	if err != nil {
 		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
 	}
 
-	user := c.MustGetUser(ctx)
-
-	err = c.service.BlogPublication(mongoId.ID, user, false)
+	err = c.service.BlogPublication(uuidParam.ID, false)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return

@@ -1,8 +1,7 @@
 package dto
 
 import (
-	"fmt"
-
+	"github.com/afteracademy/goserve/utils"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -19,16 +18,5 @@ func (d *Tag) GetValue() *Tag {
 }
 
 func (b *Tag) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	var msgs []string
-	for _, err := range errs {
-		switch err.Tag() {
-		case "required":
-			msgs = append(msgs, fmt.Sprintf("%s is required", err.Field()))
-		case "uppercase":
-			msgs = append(msgs, fmt.Sprintf("%s must be uppercase", err.Field()))
-		default:
-			msgs = append(msgs, fmt.Sprintf("%s is invalid", err.Field()))
-		}
-	}
-	return msgs, nil
+	return utils.FormatValidationErrors(errs), nil
 }
