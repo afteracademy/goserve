@@ -4,34 +4,34 @@ services:
       context: .
       dockerfile: Dockerfile
     image: goserver
-    container_name: goserver
+    container_name: goserver_api
     restart: unless-stopped
     env_file: .env
     ports:
       - '${SERVER_PORT}:8080'
     depends_on:
-      - mongo
+      - postgres
       - redis
 
-  mongo:
-    image: mongo:8.0.9
-    container_name: mongo
+  postgres:
+    image: postgres:18.1
+    container_name: goserver_postgres
     restart: unless-stopped
     env_file: .env
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${DB_ADMIN}
-      - MONGO_INITDB_ROOT_PASSWORD=${DB_ADMIN_PWD}
-      - MONGO_INITDB_DATABASE=${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_USER_PWD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - '${DB_PORT}:27017'
-    command: mongod --bind_ip_all
+      - '${DB_PORT}:5432'
     volumes:
-      - ./.extra/setup/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - dbdata:/data/db
+      # optional pgseed scripts
+      - ./.extra/setup/pgseed.sql:/docker-entrypoint-initdb.d/pgseed.sql:ro
 
   redis:
-    image: redis:8.0.0
-    container_name: redis
+    image: redis:8.4.0
+    container_name: goserver_redis
     restart: unless-stopped
     env_file: .env
     ports:
