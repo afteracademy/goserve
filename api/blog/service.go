@@ -89,7 +89,7 @@ func (s *service) getPublicPublishedBlog(filter bson.M) (*dto.PublicBlog, error)
 		return nil, network.NewNotFoundError("blog not found", err)
 	}
 
-	author, err := s.userService.FindUserPublicProfile(blog.Author)
+	author, err := s.userService.FetchUserPublicProfile(blog.Author)
 	if err != nil {
 		return nil, network.NewNotFoundError("author not found", err)
 	}

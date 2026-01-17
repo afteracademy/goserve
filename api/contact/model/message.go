@@ -16,19 +16,3 @@ type Message struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
-
-func NewMessage(msgType string, msgTxt string) *Message {
-	time := time.Now()
-	m := Message{
-		Type:      msgType,
-		Msg:       msgTxt,
-		Status:    true,
-		CreatedAt: time,
-		UpdatedAt: time,
-	}
-	return &m
-}
-
-func (message *Message) GetValue() *Message {
-	return message
-}

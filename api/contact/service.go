@@ -1,65 +1,172 @@
 package contact
 
 import (
+	"context"
+
 	"github.com/afteracademy/goserve/api/contact/dto"
 	"github.com/afteracademy/goserve/api/contact/model"
 	coredto "github.com/afteracademy/goserve/arch/dto"
-	"github.com/afteracademy/goserve/arch/mongo"
 	"github.com/afteracademy/goserve/arch/network"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Service interface {
-	SaveMessage(d *dto.CreateMessage) (*model.Message, error)
-	FindMessage(id primitive.ObjectID) (*model.Message, error)
-	FindPaginatedMessage(p *coredto.Pagination) ([]*model.Message, error)
+	SaveMessage(d *dto.MessageCreate) (*model.Message, error)
+	FetchMessage(id uuid.UUID) (*model.Message, error)
+	FetchPaginatedMessage(p *coredto.Pagination) ([]*model.Message, error)
 }
 
 type service struct {
 	network.BaseService
-	messageQueryBuilder mongo.QueryBuilder[model.Message]
+	db *pgxpool.Pool
 }
 
-func NewService(db mongo.Database) Service {
+func NewService(db *pgxpool.Pool) Service {
 	return &service{
-		BaseService:         network.NewBaseService(),
-		messageQueryBuilder: mongo.NewQueryBuilder[model.Message](db, model.CollectionName),
+		BaseService: network.NewBaseService(),
+		db:          db,
 	}
 }
 
-func (s *service) SaveMessage(d *dto.CreateMessage) (*model.Message, error) {
-	msg, err := model.NewMessage(d.Type, d.Msg)
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := s.messageQueryBuilder.SingleQuery().InsertAndRetrieveOne(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+func (s *service) SaveMessage(d *dto.MessageCreate) (*model.Message, error) {
+	return s.CreateMessage(context.Background(), d)
 }
 
-func (s *service) FindMessage(id primitive.ObjectID) (*model.Message, error) {
-	filter := bson.M{"_id": id}
-
-	msg, err := s.messageQueryBuilder.SingleQuery().FindOne(filter, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return msg, nil
+func (s *service) FetchMessage(id uuid.UUID) (*model.Message, error) {
+	return s.FindMessage(context.Background(), id)
 }
 
-func (s *service) FindPaginatedMessage(p *coredto.Pagination) ([]*model.Message, error) {
-	filter := bson.M{"status": true}
+func (s *service) FetchPaginatedMessage(p *coredto.Pagination) ([]*model.Message, error) {
+	return s.FindPaginatedMessage(context.Background(), p)
+}
 
-	msgs, err := s.messageQueryBuilder.SingleQuery().FindPaginated(filter, p.Page, p.Limit, nil)
+func (s *service) CreateMessage(
+	ctx context.Context,
+	dto *dto.MessageCreate,
+) (*model.Message, error) {
+
+	msg := model.Message{}
+
+	query := `
+		INSERT INTO messages (
+			type,
+			msg,
+		)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING
+			id,
+			type,
+			msg,
+			status,
+			created_at,
+			updated_at
+	`
+
+	err := s.db.QueryRow(
+		ctx,
+		query,
+		dto.Type,
+		dto.Msg,
+	).Scan(
+		&msg.ID,
+		&msg.Type,
+		&msg.Msg,
+		&msg.Status,
+		&msg.CreatedAt,
+		&msg.UpdatedAt,
+	)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return msgs, nil
+	return &msg, nil
+}
+
+func (s *service) FindMessage(
+	ctx context.Context,
+	id uuid.UUID,
+) (*model.Message, error) {
+
+	query := `
+		SELECT
+			id,
+			type,
+			msg,
+			status,
+			created_at,
+			updated_at
+		FROM messages
+		WHERE id = $1
+	`
+
+	var m model.Message
+
+	err := s.db.QueryRow(ctx, query, id).
+		Scan(
+			&m.ID,
+			&m.Type,
+			&m.Msg,
+			&m.Status,
+			&m.CreatedAt,
+			&m.UpdatedAt,
+		)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &m, nil
+}
+
+func (s *service) FindPaginatedMessage(
+	ctx context.Context,
+	p *coredto.Pagination,
+) ([]*model.Message, error) {
+
+	offset := (p.Page - 1) * p.Limit
+
+	query := `
+		SELECT
+			id,
+			type,
+			msg,
+			status,
+			created_at,
+			updated_at
+		FROM messages
+		WHERE status = TRUE
+		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
+	`
+
+	rows, err := s.db.Query(ctx, query, p.Limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var messages []*model.Message
+
+	for rows.Next() {
+		var m model.Message
+		if err := rows.Scan(
+			&m.ID,
+			&m.Type,
+			&m.Msg,
+			&m.Status,
+			&m.CreatedAt,
+			&m.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		messages = append(messages, &m)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }

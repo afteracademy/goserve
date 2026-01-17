@@ -32,7 +32,7 @@ func (m *keyProtection) Handler(ctx *gin.Context) {
 		return
 	}
 
-	apikey, err := m.authService.FindApiKey(key)
+	apikey, err := m.authService.FetchApiKey(key)
 	if err != nil {
 		m.Send(ctx).ForbiddenError("permission denied: invalid x-api-key", err)
 		return

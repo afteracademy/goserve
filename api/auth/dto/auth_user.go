@@ -12,9 +12,9 @@ type UserAuth struct {
 	Tokens *Tokens          `json:"tokens" validate:"required"`
 }
 
-func NewUserAuth(user *model.User, roles []*model.Role, tokens *Tokens) *UserAuth {
+func NewUserAuth(user *model.User, tokens *Tokens) *UserAuth {
 	return &UserAuth{
-		User:   dto.NewUserPrivate(user, roles),
+		User:   dto.NewUserPrivate(user),
 		Tokens: tokens,
 	}
 }

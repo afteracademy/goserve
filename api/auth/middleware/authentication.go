@@ -1,13 +1,13 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/afteracademy/goserve/api/auth"
 	"github.com/afteracademy/goserve/api/user"
-	"github.com/afteracademy/goserve/arch/mongo"
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/common"
 	"github.com/afteracademy/goserve/utils"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type authenticationProvider struct {
@@ -52,19 +52,19 @@ func (m *authenticationProvider) Middleware() gin.HandlerFunc {
 			return
 		}
 
-		userId, err := mongo.NewObjectID(claims.Subject)
+		userId, err := uuid.Parse(claims.Subject)
 		if err != nil {
 			m.Send(ctx).UnauthorizedError("permission denied: invalid claims subject", nil)
 			return
 		}
 
-		user, err := m.userService.FindUserById(userId)
+		user, err := m.userService.FetchUserById(userId)
 		if err != nil {
 			m.Send(ctx).UnauthorizedError("permission denied: claims subject does not exists", err)
 			return
 		}
 
-		keystore, err := m.authService.FindKeystore(user, claims.ID)
+		keystore, err := m.authService.FetchKeystore(user, claims.ID)
 		if err != nil || keystore == nil {
 			m.Send(ctx).UnauthorizedError("permission denied: invalid access token", err)
 			return

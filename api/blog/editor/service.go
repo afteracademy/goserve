@@ -91,7 +91,7 @@ func (s *service) GetBlogById(id primitive.ObjectID) (*dto.PrivateBlog, error) {
 		return nil, err
 	}
 
-	author, err := s.userService.FindUserPublicProfile(blog.Author)
+	author, err := s.userService.FetchUserPublicProfile(blog.Author)
 	if err != nil {
 		return nil, err
 	}

@@ -80,7 +80,7 @@ func TestAuthenticationProvider_VerifyTokenInvalid(t *testing.T) {
 func TestAuthenticationProvider_VerifyTokenInvalidClaim(t *testing.T) {
 	mockAuthService := new(auth.MockService)
 	mockUserService := new(user.MockService)
-	mockAuthService.AssertNotCalled(t, "FindUserById", mock.Anything)
+	mockAuthService.AssertNotCalled(t, "FetchUserById", mock.Anything)
 
 	token := "Bearer token"
 	claims := &jwt.RegisteredClaims{}
@@ -103,7 +103,7 @@ func TestAuthenticationProvider_VerifyTokenInvalidClaim(t *testing.T) {
 func TestAuthenticationProvider_VerifyTokenInvalidClaimUser(t *testing.T) {
 	mockAuthService := new(auth.MockService)
 	mockUserService := new(user.MockService)
-	mockAuthService.AssertNotCalled(t, "FindUserById", mock.Anything)
+	mockAuthService.AssertNotCalled(t, "FetchUserById", mock.Anything)
 
 	token := "Bearer token"
 	claims := &jwt.RegisteredClaims{}
@@ -126,7 +126,7 @@ func TestAuthenticationProvider_VerifyTokenInvalidClaimUser(t *testing.T) {
 func TestAuthenticationProvider_VerifyTokenInvalidUser(t *testing.T) {
 	mockAuthService := new(auth.MockService)
 	mockUserService := new(user.MockService)
-	mockAuthService.AssertNotCalled(t, "FindKeystore", mock.Anything)
+	mockAuthService.AssertNotCalled(t, "FetchKeystore", mock.Anything)
 
 	token := "Bearer token"
 	userId := uuid.New()
@@ -134,7 +134,7 @@ func TestAuthenticationProvider_VerifyTokenInvalidUser(t *testing.T) {
 
 	mockAuthService.On("VerifyToken", "token").Return(claims, nil)
 	mockAuthService.On("ValidateClaims", claims).Return(true)
-	mockUserService.On("FindUserById", userId).Return(nil, errors.New("user not found"))
+	mockUserService.On("FetchUserById", userId).Return(nil, errors.New("user not found"))
 
 	rr := network.MockTestAuthenticationProvider(
 		t,
@@ -159,8 +159,8 @@ func TestAuthenticationProvider_VerifyTokenInvalidKaystore(t *testing.T) {
 
 	mockAuthService.On("VerifyToken", "token").Return(claims, nil)
 	mockAuthService.On("ValidateClaims", claims).Return(true)
-	mockUserService.On("FindUserById", userId).Return(user, nil)
-	mockAuthService.On("FindKeystore", user, claims.ID).Return(nil, errors.New("not found"))
+	mockUserService.On("FetchUserById", userId).Return(user, nil)
+	mockAuthService.On("FetchKeystore", user, claims.ID).Return(nil, errors.New("not found"))
 
 	rr := network.MockTestAuthenticationProvider(
 		t,
@@ -186,8 +186,8 @@ func TestAuthenticationProvider_Success(t *testing.T) {
 
 	mockAuthService.On("VerifyToken", "token").Return(claims, nil)
 	mockAuthService.On("ValidateClaims", claims).Return(true)
-	mockUserService.On("FindUserById", userId).Return(user, nil)
-	mockAuthService.On("FindKeystore", user, claims.ID).Return(keystore, nil)
+	mockUserService.On("FetchUserById", userId).Return(user, nil)
+	mockAuthService.On("FetchKeystore", user, claims.ID).Return(keystore, nil)
 
 	mockHandler := func(ctx *gin.Context) {
 		assert.Equal(t, common.NewContextPayload().MustGetUser(ctx).ID, userId)

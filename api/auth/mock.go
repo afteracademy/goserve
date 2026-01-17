@@ -28,12 +28,12 @@ func (m *MockService) SignInBasic(signInDto *dto.SignInBasic) (*dto.UserAuth, er
 	return args.Get(0).(*dto.UserAuth), args.Error(1)
 }
 
-func (m *MockService) RenewToken(tokenRefreshDto *dto.TokenRefresh, accessToken string) (*dto.UserTokens, error) {
+func (m *MockService) RenewToken(tokenRefreshDto *dto.TokenRefresh, accessToken string) (*dto.Tokens, error) {
 	args := m.Called(tokenRefreshDto, accessToken)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*dto.UserTokens), args.Error(1)
+	return args.Get(0).(*dto.Tokens), args.Error(1)
 }
 
 func (m *MockService) SignOut(keystore *model.Keystore) error {
@@ -51,24 +51,8 @@ func (m *MockService) GenerateToken(user *userModel.User) (string, string, error
 	return args.String(0), args.String(1), args.Error(2)
 }
 
-func (m *MockService) CreateKeystore(client *userModel.User, primaryKey string, secondaryKey string) (*model.Keystore, error) {
-	args := m.Called(client, primaryKey, secondaryKey)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.Keystore), args.Error(1)
-}
-
-func (m *MockService) FindKeystore(client *userModel.User, primaryKey string) (*model.Keystore, error) {
+func (m *MockService) FetchKeystore(client *userModel.User, primaryKey string) (*model.Keystore, error) {
 	args := m.Called(client, primaryKey)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.Keystore), args.Error(1)
-}
-
-func (m *MockService) FindRefreshKeystore(client *userModel.User, pKey string, sKey string) (*model.Keystore, error) {
-	args := m.Called(client, pKey, sKey)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -101,7 +85,7 @@ func (m *MockService) ValidateClaims(claims *jwt.RegisteredClaims) bool {
 	return args.Bool(0)
 }
 
-func (m *MockService) FindApiKey(key string) (*model.ApiKey, error) {
+func (m *MockService) FetchApiKey(key string) (*model.ApiKey, error) {
 	args := m.Called(key)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)

@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const RolesTableName = "roles"
+
 type RoleCode string
 
 const (
@@ -21,17 +23,4 @@ type Role struct {
 	Status    bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
-}
-
-const RolesTableName = "roles"
-
-func NewRole(code RoleCode) *Role {
-	now := time.Now()
-	r := Role{
-		Code:      code,
-		Status:    true,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
-	return &r
 }

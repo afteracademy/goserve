@@ -63,9 +63,9 @@ func (m *module) AuthorizationProvider() network.AuthorizationProvider {
 }
 
 func NewModule(context context.Context, env *config.Env, db postgres.Database, store redis.Store) Module {
-	userService := user.NewService(db)
-	authService := auth.NewService(db, env, userService)
-	blogService := blog.NewService(db, store, userService)
+	userService := user.NewService(db.Pool())
+	authService := auth.NewService(db.Pool(), env, userService)
+	blogService := blog.NewService(db.Pool(), store, userService)
 
 	return &module{
 		Context:     context,

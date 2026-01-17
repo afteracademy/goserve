@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/afteracademy/goserve/api/auth/model"
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/startup"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntegrationAuthController_SignupSuccess(t *testing.T) {
@@ -45,7 +45,7 @@ func TestIntegrationAuthController_SignupSuccess(t *testing.T) {
 		t.Fatalf("could not delete apikey: %v", err)
 	}
 
-	_, err = module.GetInstance().UserService.DeleteUserByEmail("test@abc.com")
+	_, err = module.GetInstance().UserService.RemoveUserByEmail("test@abc.com")
 	if err != nil {
 		t.Fatalf("could not delete user: %v", err)
 	}

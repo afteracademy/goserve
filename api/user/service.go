@@ -13,15 +13,14 @@ import (
 type Service interface {
 	FetchUserPrivateProfile(user *model.User) (*dto.UserPrivate, error)
 	FetchUserPublicProfile(userId uuid.UUID) (*dto.UserPublic, error)
-	FindRoleByCode(ctx context.Context, code model.RoleCode) (*model.Role, error)
-	FindRoles(ctx context.Context, roleIds []uuid.UUID) ([]*model.Role, error)
-	FindUserById(ctx context.Context, id uuid.UUID) (*model.User, error)
-	FindUserByEmail(ctx context.Context, email string) (*model.User, error)
-	CreateUser(ctx context.Context, user *model.User) (*model.User, error)
-	FindUserRoles(ctx context.Context, user model.User) ([]*model.Role, error)
-	FindUserPrivateProfile(ctx context.Context, user *model.User) (*model.User, error)
-	FindUserPublicProfile(ctx context.Context, userId uuid.UUID) (*model.User, error)
-	DeleteUserByEmail(ctx context.Context, email string) (bool, error)
+	FetchUserById(id uuid.UUID) (*model.User, error)
+	IsEmailExists(email string) (bool, error)
+	FetchUserByEmail(email string) (*model.User, error)
+	RemoveUserByEmail(email string) (bool, error)
+	FetchRoleByCode(code model.RoleCode) (*model.Role, error)
+	CreateUser(
+		email string, password string, name string, profilePicURL *string, roles []*model.Role,
+	) (*model.User, error)
 }
 
 type service struct {
@@ -47,6 +46,44 @@ func (s *service) FetchUserPublicProfile(userId uuid.UUID) (*dto.UserPublic, err
 		return nil, network.NewNotFoundError("user does not exists", err)
 	}
 	return dto.NewUserPublic(user), nil
+}
+
+func (s *service) FetchUserById(id uuid.UUID) (*model.User, error) {
+	return s.FindUserById(context.Background(), id)
+}
+
+func (s *service) FetchUserByEmail(email string) (*model.User, error) {
+	return s.FindUserByEmail(context.Background(), email)
+}
+
+func (s *service) RemoveUserByEmail(email string) (bool, error) {
+	return s.RemoveUserByEmail(email)
+}
+
+func (s *service) FetchRoleByCode(code model.RoleCode) (*model.Role, error) {
+	return s.FindRoleByCode(context.Background(), code)
+}
+
+func (s *service) IsEmailExists(
+	email string,
+) (bool, error) {
+	ctx := context.Background()
+	
+	query := `
+		SELECT EXISTS (
+			SELECT 1
+			FROM users
+			WHERE email = $1
+		)
+	`
+
+	var exists bool
+	err := s.db.QueryRow(ctx, query, email).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }
 
 func (s *service) FindRoleByCode(
@@ -273,9 +310,11 @@ func (s *service) FindUserRoles(ctx context.Context, user model.User) ([]*model.
 }
 
 func (s *service) CreateUser(
-	ctx context.Context,
-	user *model.User,
+	email string, password string, name string, profilePicURL *string, roles []*model.Role,
 ) (*model.User, error) {
+	ctx := context.Background()
+
+	user := &model.User{}
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -283,40 +322,41 @@ func (s *service) CreateUser(
 	}
 	defer tx.Rollback(ctx)
 
-	// Insert user
 	query := `
 		INSERT INTO users (
 			email,
 			password,
 			name,
 			profile_pic_url,
-			verified,
+			verified
+		)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING
+			id,
 			status,
 			created_at,
 			updated_at
-		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id
 	`
 
 	err = tx.QueryRow(
 		ctx,
 		query,
-		user.Email,
-		user.Password,
-		user.Name,
-		user.ProfilePicURL,
-		user.Verified,
-		user.Status,
-		user.CreatedAt,
-		user.UpdatedAt,
-	).Scan(&user.ID)
+		email,
+		password,
+		name,
+		profilePicURL,
+		false,
+	).Scan(
+		&user.ID,
+		&user.Status,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	// Insert user roles
 	const roleInsert = `
 		INSERT INTO user_roles (user_id, role_id)
 		VALUES ($1, $2)
@@ -329,7 +369,6 @@ func (s *service) CreateUser(
 		}
 	}
 
-	// Commit
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}

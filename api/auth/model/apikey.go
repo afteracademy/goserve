@@ -24,20 +24,3 @@ type ApiKey struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
-
-func NewApiKey(key string, version int, permissions []Permission, comments []string) *ApiKey {
-	now := time.Now()
-	return &ApiKey{
-		Key:         key,
-		Version:     version,
-		Permissions: permissions,
-		Comments:    comments,
-		Status:      true,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-	}
-}
-
-func (apikey *ApiKey) GetValue() *ApiKey {
-	return apikey
-}
