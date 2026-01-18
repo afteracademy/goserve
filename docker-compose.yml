@@ -12,6 +12,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - migrate
 
   postgres:
     image: postgres:18.1
@@ -28,6 +29,14 @@ services:
       - dbdata:/data/db
       # optional pgseed scripts
       - ./.extra/setup/pgseed.sql:/docker-entrypoint-initdb.d/pgseed.sql:ro
+  
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      - postgres
+    entrypoint: ["migrate"]
 
   redis:
     image: redis:8.4.0

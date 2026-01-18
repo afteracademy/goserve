@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS api_keys (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Api Keys Indexes
+CREATE INDEX IF NOT EXISTS api_keys_key_status_idx
+ON api_keys (key, status);
+
 -- Roles Table
 CREATE TABLE IF NOT EXISTS roles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -42,6 +46,71 @@ CREATE TABLE IF NOT EXISTS user_roles (
     role_id UUID REFERENCES roles(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, role_id)
 );
+
+-- Keystore Table
+CREATE TABLE IF NOT EXISTS keystore (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	p_key TEXT NOT NULL,
+	s_key TEXT NOT NULL,
+	status BOOLEAN DEFAULT TRUE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Keystore Table Indexes
+CREATE INDEX IF NOT EXISTS keystore_client_status_idx
+ON keystore (client_id, status);
+
+CREATE INDEX IF NOT EXISTS keystore_client_pkey_status_idx
+ON keystore (client_id, p_key, status);
+
+CREATE INDEX IF NOT EXISTS keystore_client_pkey_skey_status_idx
+ON keystore (client_id, p_key, s_key, status);
+
+-- Messages Table
+CREATE TABLE messages (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	type TEXT NOT NULL,
+	msg TEXT NOT NULL,
+	status BOOLEAN DEFAULT TRUE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Blogs Table
+CREATE TABLE IF NOT EXISTS blogs (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	title TEXT NOT NULL,
+	description TEXT NOT NULL,
+	text TEXT,
+	draft_text TEXT NOT NULL,
+	tags TEXT[],
+	author_id UUID NOT NULL REFERENCES users(id),
+	img_url TEXT,
+	slug TEXT NOT NULL UNIQUE,
+	score DOUBLE PRECISION DEFAULT 0.01,
+	submitted BOOLEAN DEFAULT FALSE,
+	drafted BOOLEAN DEFAULT TRUE,
+	published BOOLEAN DEFAULT FALSE,
+	status BOOLEAN DEFAULT TRUE,
+	published_at TIMESTAMP,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Blogs Table Indexes
+CREATE INDEX IF NOT EXISTS blogs_publish_idx
+ON blogs (published_at DESC, score DESC)
+WHERE published = TRUE AND status = TRUE;
+
+CREATE INDEX IF NOT EXISTS blogs_tags_gin_idx
+ON blogs
+USING GIN (tags);
+
+CREATE INDEX IF NOT EXISTS blogs_search_idx
+ON blogs
+USING GIN (to_tsvector('english', title));
 
 -- 2. Insert Data
 -- --------------

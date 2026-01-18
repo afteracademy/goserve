@@ -39,10 +39,10 @@ func (m *module) Controllers() []network.Controller {
 		auth.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), m.AuthService),
 		user.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), m.UserService),
 		blog.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), m.BlogService),
-		author.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), author.NewService(m.DB, m.BlogService)),
-		editor.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), editor.NewService(m.DB, m.UserService)),
-		blogs.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), blogs.NewService(m.DB, m.Store)),
-		contact.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), contact.NewService(m.DB)),
+		author.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), author.NewService(m.DB.Pool(), m.BlogService)),
+		editor.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), editor.NewService(m.DB.Pool(), m.UserService)),
+		blogs.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), blogs.NewService(m.DB.Pool(), m.Store)),
+		contact.NewController(m.AuthenticationProvider(), m.AuthorizationProvider(), contact.NewService(m.DB.Pool())),
 	}
 }
 

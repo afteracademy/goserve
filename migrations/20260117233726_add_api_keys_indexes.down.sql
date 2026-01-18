@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS api_keys_key_status_idx;

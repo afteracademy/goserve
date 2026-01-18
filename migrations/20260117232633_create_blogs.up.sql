@@ -1,0 +1,19 @@
+CREATE TABLE blogs (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	title TEXT NOT NULL,
+	description TEXT NOT NULL,
+	text TEXT,
+	draft_text TEXT NOT NULL,
+	tags TEXT[],
+	author_id UUID NOT NULL REFERENCES users(id),
+	img_url TEXT,
+	slug TEXT NOT NULL UNIQUE,
+	score DOUBLE PRECISION DEFAULT 0.01,
+	submitted BOOLEAN DEFAULT FALSE,
+	drafted BOOLEAN DEFAULT TRUE,
+	published BOOLEAN DEFAULT FALSE,
+	status BOOLEAN DEFAULT TRUE,
+	published_at TIMESTAMP,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

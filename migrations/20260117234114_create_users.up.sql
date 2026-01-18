@@ -1,0 +1,11 @@
+CREATE TABLE users (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	email TEXT NOT NULL UNIQUE,
+	password TEXT,
+	name TEXT NOT NULL,
+	profile_pic_url TEXT,
+	verified BOOLEAN DEFAULT FALSE,
+	status BOOLEAN DEFAULT TRUE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
