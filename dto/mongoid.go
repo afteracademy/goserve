@@ -3,7 +3,7 @@ package coredto
 import (
 	"fmt"
 
-	"github.com/afteracademy/goserve/mongo"
+	"github.com/afteracademy/goserve/v2/mongo"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

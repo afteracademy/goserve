@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/afteracademy/goserve/network"
+	"github.com/afteracademy/goserve/v2/network"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )

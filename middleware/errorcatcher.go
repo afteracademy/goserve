@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/afteracademy/goserve/network"
+	"github.com/afteracademy/goserve/v2/network"
 	"github.com/gin-gonic/gin"
 )
 

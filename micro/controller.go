@@ -1,7 +1,7 @@
 package micro
 
 import (
-	"github.com/afteracademy/goserve/network"
+	"github.com/afteracademy/goserve/v2/network"
 )
 
 type baseController struct {
