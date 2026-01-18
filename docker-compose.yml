@@ -32,6 +32,7 @@ services:
   
   migrate:
     image: migrate/migrate
+    container_name: goserver_migrate
     volumes:
       - ./migrations:/migrations
     depends_on:
