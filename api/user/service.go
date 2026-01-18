@@ -314,7 +314,7 @@ func (s *service) CreateUser(
 ) (*model.User, error) {
 	ctx := context.Background()
 
-	user := &model.User{}
+	var user model.User
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -333,6 +333,11 @@ func (s *service) CreateUser(
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING
 			id,
+			email,
+			password,
+			name,
+			profile_pic_url,
+			verified,
 			status,
 			created_at,
 			updated_at
@@ -348,6 +353,11 @@ func (s *service) CreateUser(
 		false,
 	).Scan(
 		&user.ID,
+		&user.Email,
+		&user.Password,
+		&user.Name,
+		&user.ProfilePicURL,
+		&user.Verified,
 		&user.Status,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -362,7 +372,7 @@ func (s *service) CreateUser(
 		VALUES ($1, $2)
 	`
 
-	for _, role := range user.Roles {
+	for _, role := range roles {
 		_, err := tx.Exec(ctx, roleInsert, user.ID, role.ID)
 		if err != nil {
 			return nil, err
@@ -373,7 +383,9 @@ func (s *service) CreateUser(
 		return nil, err
 	}
 
-	return user, nil
+	user.Roles = roles
+
+	return &user, nil
 }
 
 func (s *service) FindUserPrivateProfile(

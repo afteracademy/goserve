@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const KeystoreTableName = "keystores"
+const KeystoreTableName = "keystore"
 
 type Keystore struct {
 	ID           uuid.UUID

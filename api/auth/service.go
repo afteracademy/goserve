@@ -146,7 +146,7 @@ func (s *service) SignOut(keystore *model.Keystore) error {
 	ctx := context.Background()
 
 	query := `
-		DELETE FROM keystores
+		DELETE FROM keystore
 		WHERE id = $1
 	`
 
@@ -279,7 +279,7 @@ func (s *service) CreateKeystore(
 	var ks = model.Keystore{}
 
 	query := `
-		INSERT INTO keystores (
+		INSERT INTO keystore (
 			user_id,
 			p_key,
 			s_key
@@ -324,7 +324,7 @@ func (s *service) FetchKeystore(
 			status,
 			created_at,
 			updated_at
-		FROM keystores
+		FROM keystore
 		WHERE user_id = $1
 		  AND p_key = $2
 		  AND status = TRUE
@@ -366,7 +366,7 @@ func (s *service) FindRefreshKeystore(
 			status,
 			created_at,
 			updated_at
-		FROM keystores
+		FROM keystore
 		WHERE user_id = $1
 		  AND p_key = $2
 		  AND s_key = $3

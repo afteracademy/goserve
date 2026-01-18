@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
+		profile_pic_url TEXT,
+		verified BOOLEAN DEFAULT FALSE,
     status BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -50,7 +52,7 @@ CREATE TABLE IF NOT EXISTS user_roles (
 -- Keystore Table
 CREATE TABLE IF NOT EXISTS keystore (
 	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	p_key TEXT NOT NULL,
 	s_key TEXT NOT NULL,
 	status BOOLEAN DEFAULT TRUE,
@@ -59,14 +61,14 @@ CREATE TABLE IF NOT EXISTS keystore (
 );
 
 -- Keystore Table Indexes
-CREATE INDEX IF NOT EXISTS keystore_client_status_idx
-ON keystore (client_id, status);
+CREATE INDEX IF NOT EXISTS keystore_user_status_idx
+ON keystore (user_id, status);
 
-CREATE INDEX IF NOT EXISTS keystore_client_pkey_status_idx
-ON keystore (client_id, p_key, status);
+CREATE INDEX IF NOT EXISTS keystore_user_pkey_status_idx
+ON keystore (user_id, p_key, status);
 
-CREATE INDEX IF NOT EXISTS keystore_client_pkey_skey_status_idx
-ON keystore (client_id, p_key, s_key, status);
+CREATE INDEX IF NOT EXISTS keystore_user_pkey_skey_status_idx
+ON keystore (user_id, p_key, s_key, status);
 
 -- Messages Table
 CREATE TABLE messages (

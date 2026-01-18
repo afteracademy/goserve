@@ -1,6 +1,6 @@
 CREATE TABLE keystore (
 	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-	client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	p_key TEXT NOT NULL,
 	s_key TEXT NOT NULL,
 	status BOOLEAN DEFAULT TRUE,
