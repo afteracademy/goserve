@@ -5,7 +5,7 @@ import (
 
 	"github.com/afteracademy/goserve/api/blog/model"
 	"github.com/afteracademy/goserve/api/user/dto"
-	"github.com/afteracademy/goserve/utils"
+	"github.com/afteracademy/goserve/arch/utility"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -28,7 +28,7 @@ func EmptyBlogPublic() *BlogPublic {
 }
 
 func NewBlogPublic(blog *model.Blog, author *dto.UserPublic) (*BlogPublic, error) {
-	b, err := utils.MapTo[BlogPublic](blog)
+	b, err := utility.MapTo[BlogPublic](blog)
 	if err != nil {
 		return nil, err
 	}
@@ -43,5 +43,5 @@ func (d *BlogPublic) GetValue() *BlogPublic {
 }
 
 func (b *BlogPublic) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	return utils.FormatValidationErrors(errs), nil
+	return utility.FormatValidationErrors(errs), nil
 }

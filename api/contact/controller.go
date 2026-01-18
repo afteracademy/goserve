@@ -1,10 +1,10 @@
 package contact
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/afteracademy/goserve/api/contact/dto"
 	"github.com/afteracademy/goserve/arch/network"
-	"github.com/afteracademy/goserve/utils"
+	"github.com/afteracademy/goserve/arch/utility"
+	"github.com/gin-gonic/gin"
 )
 
 type controller struct {
@@ -40,7 +40,7 @@ func (c *controller) createMessageHandler(ctx *gin.Context) {
 		return
 	}
 
-	data, err := utils.MapTo[dto.Message](msg)
+	data, err := utility.MapTo[dto.Message](msg)
 	if err != nil {
 		c.Send(ctx).InternalServerError("something went wrong", err)
 		return

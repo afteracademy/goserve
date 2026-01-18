@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/afteracademy/goserve/utils"
+	"github.com/afteracademy/goserve/arch/utility"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -22,5 +22,5 @@ func (d *Tokens) GetValue() *Tokens {
 }
 
 func (d *Tokens) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	return utils.FormatValidationErrors(errs), nil
+	return utility.FormatValidationErrors(errs), nil
 }

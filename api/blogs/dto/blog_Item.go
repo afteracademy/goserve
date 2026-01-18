@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/afteracademy/goserve/api/blog/model"
-	"github.com/afteracademy/goserve/utils"
+	"github.com/afteracademy/goserve/arch/utility"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -21,7 +21,7 @@ type BlogItem struct {
 }
 
 func NewBlogItem(blog *model.Blog) (*BlogItem, error) {
-	return utils.MapTo[BlogItem](blog)
+	return utility.MapTo[BlogItem](blog)
 }
 
 func EmptyBlogItem() *BlogItem {
@@ -33,5 +33,5 @@ func (d *BlogItem) GetValue() *BlogItem {
 }
 
 func (b *BlogItem) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	return utils.FormatValidationErrors(errs), nil
+	return utility.FormatValidationErrors(errs), nil
 }

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestConvertUint16(t *testing.T) {
@@ -44,42 +43,6 @@ func TestConvertUint8(t *testing.T) {
 type TestStruct struct {
 	Field1 string
 	Field2 int
-}
-
-func TestCopyAndSetField(t *testing.T) {
-	input := &TestStruct{Field1: "original", Field2: 123}
-	newValue := "new value"
-	result := CopyAndSetField(input, "Field1", &newValue)
-
-	assert.Equal(t, "new value", result.Field1)
-	assert.Equal(t, 123, result.Field2)
-}
-
-func TestIsValidObjectID(t *testing.T) {
-	validID := primitive.NewObjectID().Hex()
-	invalidID := "invalid"
-
-	assert.True(t, IsValidObjectID(validID))
-	assert.False(t, IsValidObjectID(invalidID))
-}
-
-func TestMapTo(t *testing.T) {
-	type From struct {
-		Field1 string
-		Field2 int
-	}
-
-	type To struct {
-		Field1 string
-		Field2 int
-	}
-
-	from := &From{Field1: "value", Field2: 42}
-	to, err := MapTo[To](from)
-
-	assert.NoError(t, err)
-	assert.Equal(t, from.Field1, to.Field1)
-	assert.Equal(t, from.Field2, to.Field2)
 }
 
 func TestExtractBearerToken(t *testing.T) {

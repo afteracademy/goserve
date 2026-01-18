@@ -6,7 +6,7 @@ import (
 	"github.com/afteracademy/goserve/api/blog/model"
 	"github.com/afteracademy/goserve/api/user/dto"
 	userModel "github.com/afteracademy/goserve/api/user/model"
-	"github.com/afteracademy/goserve/utils"
+	"github.com/afteracademy/goserve/arch/utility"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -35,12 +35,12 @@ func EmptyBlogPrivate() *BlogPrivate {
 }
 
 func NewBlogPrivate(blog *model.Blog, author *userModel.User) (*BlogPrivate, error) {
-	b, err := utils.MapTo[BlogPrivate](blog)
+	b, err := utility.MapTo[BlogPrivate](blog)
 	if err != nil {
 		return nil, err
 	}
 
-	b.Author, err = utils.MapTo[dto.UserPublic](author)
+	b.Author, err = utility.MapTo[dto.UserPublic](author)
 	if err != nil {
 		return nil, err
 	}
@@ -53,5 +53,5 @@ func (d *BlogPrivate) GetValue() *BlogPrivate {
 }
 
 func (b *BlogPrivate) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	return utils.FormatValidationErrors(errs), nil
+	return utility.FormatValidationErrors(errs), nil
 }

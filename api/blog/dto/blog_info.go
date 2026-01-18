@@ -2,7 +2,7 @@ package dto
 
 import (
 	"github.com/afteracademy/goserve/api/blog/model"
-	"github.com/afteracademy/goserve/utils"
+	"github.com/afteracademy/goserve/arch/utility"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -18,7 +18,7 @@ type BlogInfo struct {
 }
 
 func NewBlogInfo(blog *model.Blog) (*BlogInfo, error) {
-	return utils.MapTo[BlogInfo](blog)
+	return utility.MapTo[BlogInfo](blog)
 }
 
 func EmptyBlogInfo() *BlogInfo {
@@ -30,5 +30,5 @@ func (d *BlogInfo) GetValue() *BlogInfo {
 }
 
 func (d *BlogInfo) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	return utils.FormatValidationErrors(errs), nil
+	return utility.FormatValidationErrors(errs), nil
 }

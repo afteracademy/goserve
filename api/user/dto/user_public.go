@@ -2,7 +2,7 @@ package dto
 
 import (
 	"github.com/afteracademy/goserve/api/user/model"
-	"github.com/afteracademy/goserve/utils"
+	"github.com/afteracademy/goserve/arch/utility"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -26,5 +26,5 @@ func (d *UserPublic) GetValue() *UserPublic {
 }
 
 func (d *UserPublic) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	return utils.FormatValidationErrors(errs), nil
+	return utility.FormatValidationErrors(errs), nil
 }

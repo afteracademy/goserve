@@ -10,6 +10,7 @@ import (
 	"github.com/afteracademy/goserve/api/user"
 	userModel "github.com/afteracademy/goserve/api/user/model"
 	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/arch/utility"
 	"github.com/afteracademy/goserve/config"
 	"github.com/afteracademy/goserve/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -212,11 +213,11 @@ func (s *service) RenewToken(tokenRefreshDto *dto.TokenRefresh, accessToken stri
 
 func (s *service) GenerateToken(user *userModel.User) (string, string, error) {
 	ctx := context.Background()
-	primaryKey, err := utils.GenerateRandomString(32)
+	primaryKey, err := utility.GenerateRandomString(32)
 	if err != nil {
 		return "", "", err
 	}
-	secondaryKey, err := utils.GenerateRandomString(32)
+	secondaryKey, err := utility.GenerateRandomString(32)
 	if err != nil {
 		return "", "", err
 	}
@@ -452,7 +453,8 @@ func (s *service) ValidateClaims(claims *jwt.RegisteredClaims) bool {
 		return false
 	}
 
-	return utils.IsValidObjectID(claims.Subject)
+	err := uuid.Validate(claims.Subject)
+	return err == nil
 }
 
 func (s *service) FetchApiKey(

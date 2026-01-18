@@ -1,11 +1,11 @@
 package auth
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/afteracademy/goserve/api/auth/dto"
 	"github.com/afteracademy/goserve/arch/network"
 	"github.com/afteracademy/goserve/common"
 	"github.com/afteracademy/goserve/utils"
+	"github.com/gin-gonic/gin"
 )
 
 type controller struct {
