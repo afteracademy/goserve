@@ -76,12 +76,27 @@ func FormatValidationErrors(err error) []string {
 	}
 
 	msgs := make([]string, 0, len(errs))
+
 	for _, e := range errs {
 		format, ok := Messages[e.Tag()]
 		if !ok {
 			format = "%s is invalid"
 		}
-		msgs = append(msgs, fmt.Sprintf(format, strings.ToLower(e.Field()), e.Param()))
+
+		field := strings.ToLower(e.Field())
+		param := e.Param()
+
+		verbCount := strings.Count(format, "%s")
+
+		switch verbCount {
+		case 1:
+			msgs = append(msgs, fmt.Sprintf(format, field))
+		case 2:
+			msgs = append(msgs, fmt.Sprintf(format, field, param))
+		default:
+			msgs = append(msgs, fmt.Sprintf("%s is invalid", field))
+		}
 	}
+
 	return msgs
 }
