@@ -1,8 +1,8 @@
 package middleware
 
 import (
+	"github.com/afteracademy/goserve/network"
 	"github.com/gin-gonic/gin"
-	"github.com/afteracademy/goserve/arch/network"
 )
 
 type notFound struct {

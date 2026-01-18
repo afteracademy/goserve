@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/network"
 )
 
 type sender struct{}

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/afteracademy/goserve/arch/network"
+	"github.com/afteracademy/goserve/network"
 	"github.com/stretchr/testify/assert"
 )
 

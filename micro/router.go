@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/afteracademy/goserve/network"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/afteracademy/goserve/arch/network"
 )
 
 type router struct {

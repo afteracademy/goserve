@@ -1,9 +1,9 @@
 package micro
 
 import (
+	"github.com/afteracademy/goserve/network"
 	"github.com/gin-gonic/gin"
 	"github.com/nats-io/nats.go/micro"
-	"github.com/afteracademy/goserve/arch/network"
 )
 
 type NatsGroup = micro.Group
