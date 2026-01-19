@@ -1,6 +1,6 @@
 # goserve - Go Backend Architecture
 
-![Banner](.extra/docs/goserve-banner.png)
+![Banner](.docs/goserve-banner.png)
 
 ## Framework
 - Go
@@ -13,8 +13,13 @@
 - Viper
 - Crypto
 
+## Example Project Build Using This Architecture
+1. [goserve-example-api-server-mongo](https://github.com/afteracademy/goserve-example-api-server-mongo)
+
+2. [goserve-example-api-server-postgres](https://github.com/afteracademy/goserve-example-api-server-postgres)
+
 ## Architecture
-- TODO - Migration in progress
+- TODO
 
 ## Find this project useful ? :heart:
 * Support it by clicking the :star: button on the upper right of this page. :v:
