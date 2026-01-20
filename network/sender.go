@@ -29,6 +29,10 @@ type send struct {
 	context *gin.Context
 }
 
+func (s *send) CustomResponse(rescode ResCode, status int, message string, data any) {
+	s.sendResponse(NewCustomResponse(rescode, status, message, data))
+}
+
 func (s *send) SuccessMsgResponse(message string) {
 	s.sendResponse(NewSuccessMsgResponse(message))
 }
@@ -73,10 +77,15 @@ func (s *send) MixedError(err error) {
 }
 
 func (s *send) sendResponse(response Response) {
-	s.context.JSON(int(response.GetStatus()), response)
+	res, err := ValidateDto(s.context, response)
+	if err != nil {
+		res = NewInternalServerErrorResponse(err.Error())
+	}
+
+	s.context.JSON(int(res.GetStatus()), res)
 	// this is needed since gin calls ctx.Next() inside the resposne handeling
 	// ref: https://github.com/gin-gonic/gin/issues/2221
-	s.context.Abort() 
+	s.context.Abort()
 }
 
 func (s *send) sendError(err ApiError) {

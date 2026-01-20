@@ -66,6 +66,26 @@ func TestSend_SuccessMsgResponse(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, "test message"))
 }
 
+func TestSend_SuccessDataResponse_Error(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	sender := NewResponseSender()
+	resp := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(resp)
+
+	data := struct {
+		Field string `json:"field" validate:"required,min=100"`
+	}{
+		Field: "test data",
+	}
+
+	sender.Send(ctx).SuccessDataResponse("test message", data)
+
+	assert.Equal(t, http.StatusInternalServerError, resp.Code)
+	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, failue_code))
+	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, "field must be at least 100 characters"))
+	assert.NotContains(t, resp.Body.String(), fmt.Sprintf(`"data":%s`, `{"field":"test data"}`))
+}
+
 func TestSend_SuccessDataResponse(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	sender := NewResponseSender()

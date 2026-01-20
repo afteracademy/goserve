@@ -11,7 +11,11 @@ type baseController struct {
 	authorizeProvider AuthorizationProvider
 }
 
-func NewBaseController(basePath string, authProvider AuthenticationProvider, authorizeProvider AuthorizationProvider) BaseController {
+func NewBaseController(
+	basePath string,
+	authProvider AuthenticationProvider,
+	authorizeProvider AuthorizationProvider,
+) BaseController {
 	return &baseController{
 		ResponseSender:    NewResponseSender(),
 		basePath:          basePath,

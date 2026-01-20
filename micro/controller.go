@@ -9,7 +9,11 @@ type baseController struct {
 	network.BaseController
 }
 
-func NewBaseController(basePath string, authProvider network.AuthenticationProvider, authorizeProvider network.AuthorizationProvider) BaseController {
+func NewBaseController(
+	basePath string,
+	authProvider network.AuthenticationProvider,
+	authorizeProvider network.AuthorizationProvider,
+) BaseController {
 	return &baseController{
 		MessageSender:  NewMessageSender(),
 		BaseController: network.NewBaseController(basePath, authProvider, authorizeProvider),

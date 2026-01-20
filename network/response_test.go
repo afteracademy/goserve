@@ -6,9 +6,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewCustomResponse(t *testing.T) {
+	message := "Success with data"
+	data := map[string]any{
+		"key": "value",
+	}
+	resp := NewCustomResponse("10005", 200, message, data)
+
+	assert.Equal(t, ResCode("10005"), resp.GetResCode())
+	assert.Equal(t, "Success with data", resp.GetMessage())
+	assert.Equal(t, 200, resp.GetStatus())
+	assert.Equal(t, data, resp.GetData())
+}
+
 func TestNewSuccessDataResponse(t *testing.T) {
 	message := "Success with data"
-	data := map[string]interface{}{
+	data := map[string]any{
 		"key": "value",
 	}
 	resp := NewSuccessDataResponse(message, data)

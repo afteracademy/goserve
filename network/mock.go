@@ -2,36 +2,39 @@ package network
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/afteracademy/goserve/v2/utility"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/mock"
 )
 
+type MockPayload struct {
+	Field string `json:"field" form:"field" uri:"field" binding:"required" validate:"required,min=2,max=100"`
+}
+
 type MockDto struct {
-	Field string `json:"field" form:"field" uri:"field" binding:"required" validate:"required"`
+	Field string `json:"field" form:"field" uri:"field" binding:"required" validate:"required,min=2,max=100"`
 }
 
 func (d *MockDto) GetValue() *MockDto {
 	return d
 }
 
-func (b *MockDto) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	var msgs []string
-	for _, err := range errs {
-		switch err.Tag() {
-		case "required":
-			msgs = append(msgs, fmt.Sprintf("%s is required", err.Field()))
-		default:
-			msgs = append(msgs, fmt.Sprintf("%s is invalid", err.Field()))
-		}
-	}
-	return msgs, nil
+type MockDtoV struct {
+	Field string `json:"field" form:"field" uri:"field" binding:"required" validate:"required,min=2,max=100"`
+}
+
+func (d *MockDtoV) GetValue() *MockDtoV {
+	return d
+}
+
+func (b *MockDtoV) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
+	return utility.FormatValidationErrors(errs), nil
 }
 
 func MockSuccessMsgHandler(msg string) gin.HandlerFunc {

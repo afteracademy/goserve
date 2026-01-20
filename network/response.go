@@ -7,10 +7,8 @@ import (
 type ResCode string
 
 const (
-	success_code              ResCode = "10000"
-	failue_code               ResCode = "10001"
-	retry_code                ResCode = "10002"
-	invalid_access_token_code ResCode = "10003"
+	success_code ResCode = "10000"
+	failue_code  ResCode = "10001"
 )
 
 type response struct {
@@ -34,6 +32,15 @@ func (r *response) GetMessage() string {
 
 func (r *response) GetData() any {
 	return r.Data
+}
+
+func NewCustomResponse(rescode ResCode, status int, message string, data any) Response {
+	return &response{
+		ResCode: rescode,
+		Status:  status,
+		Message: message,
+		Data:    data,
+	}
 }
 
 func NewSuccessDataResponse(message string, data any) Response {
