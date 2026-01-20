@@ -1,3 +1,5 @@
+[![Go Tests](https://github.com/afteracademy/goserve/actions/workflows/go-test.yml/badge.svg)](https://github.com/afteracademy/goserve/workflows/go-test.yml)
+
 # goserve - Go Backend Architecture
 
 ![Banner](.docs/goserve-banner.png)
