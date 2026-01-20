@@ -62,7 +62,7 @@ func (r *request[T]) Nats() (*T, error) {
 		return nil, err
 	}
 
-	var receiveMsg Message[*T]
+	var receiveMsg Message[T]
 	err = json.Unmarshal(msg.Data, &receiveMsg)
 	if err != nil {
 		return nil, err

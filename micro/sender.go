@@ -24,14 +24,19 @@ type send struct {
 }
 
 func (s *send) Message(data any) {
-	s.natsRequest.RespondJSON(NewAnyMessage(data, nil))
+	d, err := network.ValidateDto(&data)
+	if err != nil {
+		s.natsRequest.RespondJSON(NewMessage(d, err))
+		return
+	}
+	s.natsRequest.RespondJSON(NewMessage(d, nil))
 }
 
 func (s *send) Error(err error) {
 	if apiError, ok := err.(network.ApiError); ok {
 		msg := fmt.Sprintf("%d:%s", apiError.GetCode(), apiError.GetMessage())
-		s.natsRequest.RespondJSON(NewAnyMessage(nil, errors.New(msg)))
+		s.natsRequest.RespondJSON(NewMessage[any](nil, errors.New(msg)))
 		return
 	}
-	s.natsRequest.RespondJSON(NewAnyMessage(nil, err))
+	s.natsRequest.RespondJSON(NewMessage[any](nil, err))
 }

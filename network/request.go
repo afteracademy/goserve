@@ -12,7 +12,7 @@ func ReqBody[T any](ctx *gin.Context) (*T, error) {
 		return &payload, e
 	}
 
-	return validateDto(&payload)
+	return ValidateDto(&payload)
 }
 
 func ReqQuery[T any](ctx *gin.Context) (*T, error) {
@@ -22,7 +22,7 @@ func ReqQuery[T any](ctx *gin.Context) (*T, error) {
 		return &payload, e
 	}
 
-	return validateDto(&payload)
+	return ValidateDto(&payload)
 }
 
 func ReqParams[T any](ctx *gin.Context) (*T, error) {
@@ -32,7 +32,7 @@ func ReqParams[T any](ctx *gin.Context) (*T, error) {
 		return &payload, e
 	}
 
-	return validateDto(&payload)
+	return ValidateDto(&payload)
 }
 
 func ReqHeaders[T any](ctx *gin.Context) (*T, error) {
@@ -42,5 +42,5 @@ func ReqHeaders[T any](ctx *gin.Context) (*T, error) {
 		return &payload, e
 	}
 
-	return validateDto(&payload)
+	return ValidateDto(&payload)
 }
