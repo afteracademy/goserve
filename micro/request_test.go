@@ -120,7 +120,7 @@ func TestRequest_Nats(t *testing.T) {
 
 		mockClientTimeout := &natsClient{
 			Conn:    nc,
-			Timeout: 1 * time.Nanosecond,
+			Timeout: 0 * time.Second,
 		}
 
 		builder := NewRequestBuilder[TestResponse](mockClientTimeout, subject)
