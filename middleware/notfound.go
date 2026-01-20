@@ -6,13 +6,10 @@ import (
 )
 
 type notFound struct {
-	network.BaseMiddleware
 }
 
 func NewNotFound() network.RootMiddleware {
-	return &notFound{
-		BaseMiddleware: network.NewBaseMiddleware(),
-	}
+	return &notFound{}
 }
 
 func (m *notFound) Attach(engine *gin.Engine) {
@@ -20,5 +17,5 @@ func (m *notFound) Attach(engine *gin.Engine) {
 }
 
 func (m *notFound) Handler(ctx *gin.Context) {
-	m.Send(ctx).NotFoundError("url not found", nil)
+	network.SendNotFoundError(ctx, "url not found", nil)
 }

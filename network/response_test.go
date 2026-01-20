@@ -11,12 +11,12 @@ func TestNewCustomResponse(t *testing.T) {
 	data := map[string]any{
 		"key": "value",
 	}
-	resp := NewCustomResponse("10005", 200, message, data)
+	resp := NewCustomResponse("10005", 200, message, &data)
 
 	assert.Equal(t, ResCode("10005"), resp.GetResCode())
 	assert.Equal(t, "Success with data", resp.GetMessage())
 	assert.Equal(t, 200, resp.GetStatus())
-	assert.Equal(t, data, resp.GetData())
+	assert.Equal(t, data, *resp.GetData())
 }
 
 func TestNewSuccessDataResponse(t *testing.T) {
@@ -24,12 +24,12 @@ func TestNewSuccessDataResponse(t *testing.T) {
 	data := map[string]any{
 		"key": "value",
 	}
-	resp := NewSuccessDataResponse(message, data)
+	resp := NewSuccessDataResponse(message, &data)
 
 	assert.Equal(t, success_code, resp.GetResCode())
 	assert.Equal(t, "Success with data", resp.GetMessage())
 	assert.Equal(t, 200, resp.GetStatus())
-	assert.Equal(t, data, resp.GetData())
+	assert.Equal(t, data, *resp.GetData())
 }
 
 func TestNewSuccessMsgResponse(t *testing.T) {

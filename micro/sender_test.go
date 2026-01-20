@@ -7,7 +7,6 @@ import (
 
 	"github.com/afteracademy/goserve/v2/network"
 	"github.com/nats-io/nats.go/micro"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -57,22 +56,6 @@ func (m *MockNatsRequest) Reply() string {
 	return args.String(0)
 }
 
-func TestNewMessageSender(t *testing.T) {
-	t.Run("should return a sender instance", func(t *testing.T) {
-		sender := NewMessageSender()
-		assert.NotNil(t, sender)
-	})
-}
-
-func TestSender_SendNats(t *testing.T) {
-	t.Run("should return a send object", func(t *testing.T) {
-		sender := NewMessageSender()
-		mockNatsRequest := new(MockNatsRequest)
-		send := sender.SendNats(mockNatsRequest)
-		assert.NotNil(t, send)
-	})
-}
-
 func TestSend_Message(t *testing.T) {
 	type TestDTO struct {
 		Name string `json:"name" validate:"required"`
@@ -83,13 +66,11 @@ func TestSend_Message(t *testing.T) {
 		mockNatsRequest := new(MockNatsRequest)
 		data := TestDTO{Name: "John", Age: 30}
 
-		mockNatsRequest.On("RespondJSON", mock.MatchedBy(func(msg *Message[any]) bool {
+		mockNatsRequest.On("RespondJSON", mock.MatchedBy(func(msg *Message[TestDTO]) bool {
 			return msg.Data != nil && msg.Error == nil
 		}), mock.Anything).Return(nil).Once()
 
-		sender := NewMessageSender()
-		send := sender.SendNats(mockNatsRequest)
-		send.Message(&data)
+		SendNatsMessage(mockNatsRequest, &data)
 
 		mockNatsRequest.AssertExpectations(t)
 	})
@@ -98,13 +79,11 @@ func TestSend_Message(t *testing.T) {
 		mockNatsRequest := new(MockNatsRequest)
 		data := TestDTO{Name: "", Age: 17} // Both fields fail validation
 
-		mockNatsRequest.On("RespondJSON", mock.MatchedBy(func(msg *Message[any]) bool {
+		mockNatsRequest.On("RespondJSON", mock.MatchedBy(func(msg *Message[TestDTO]) bool {
 			return msg.Data != nil && msg.Error != nil
 		}), mock.Anything).Return(nil).Once()
 
-		sender := NewMessageSender()
-		send := sender.SendNats(mockNatsRequest)
-		send.Message(data)
+		SendNatsMessage(mockNatsRequest, &data)
 
 		mockNatsRequest.AssertExpectations(t)
 	})
@@ -113,13 +92,11 @@ func TestSend_Message(t *testing.T) {
 		mockNatsRequest := new(MockNatsRequest)
 		data := "simple string"
 
-		mockNatsRequest.On("RespondJSON", mock.MatchedBy(func(msg *Message[any]) bool {
+		mockNatsRequest.On("RespondJSON", mock.MatchedBy(func(msg *Message[string]) bool {
 			return msg.Data != nil && msg.Error != nil && *msg.Error == "invalid payload for validation"
 		}), mock.Anything).Return(nil).Once()
 
-		sender := NewMessageSender()
-		send := sender.SendNats(mockNatsRequest)
-		send.Message(data)
+		SendNatsMessage(mockNatsRequest, &data)
 
 		mockNatsRequest.AssertExpectations(t)
 	})
@@ -134,9 +111,7 @@ func TestSend_Error(t *testing.T) {
 			return msg.Data == nil && msg.Error != nil && *msg.Error == "standard error"
 		}), mock.Anything).Return(nil).Once()
 
-		sender := NewMessageSender()
-		send := sender.SendNats(mockNatsRequest)
-		send.Error(err)
+		SendNatsError(mockNatsRequest, err)
 
 		mockNatsRequest.AssertExpectations(t)
 	})
@@ -150,9 +125,7 @@ func TestSend_Error(t *testing.T) {
 			return msg.Data == nil && msg.Error != nil && *msg.Error == expectedMsg
 		}), mock.Anything).Return(nil).Once()
 
-		sender := NewMessageSender()
-		send := sender.SendNats(mockNatsRequest)
-		send.Error(apiErr)
+		SendNatsError(mockNatsRequest, apiErr)
 
 		mockNatsRequest.AssertExpectations(t)
 	})
@@ -166,9 +139,7 @@ func TestSend_Error(t *testing.T) {
 			return msg.Data == nil && msg.Error != nil && *msg.Error == expectedMsg
 		}), mock.Anything).Return(nil).Once()
 
-		sender := NewMessageSender()
-		send := sender.SendNats(mockNatsRequest)
-		send.Error(apiErr)
+		SendNatsError(mockNatsRequest, apiErr)
 
 		mockNatsRequest.AssertExpectations(t)
 	})
@@ -182,9 +153,7 @@ func TestSend_Error(t *testing.T) {
 			return msg.Data == nil && msg.Error != nil && *msg.Error == expectedMsg
 		}), mock.Anything).Return(nil).Once()
 
-		sender := NewMessageSender()
-		send := sender.SendNats(mockNatsRequest)
-		send.Error(apiErr)
+		SendNatsError(mockNatsRequest, apiErr)
 
 		mockNatsRequest.AssertExpectations(t)
 	})
@@ -198,9 +167,7 @@ func TestSend_Error(t *testing.T) {
 			return msg.Data == nil && msg.Error != nil && *msg.Error == expectedMsg
 		}), mock.Anything).Return(nil).Once()
 
-		sender := NewMessageSender()
-		send := sender.SendNats(mockNatsRequest)
-		send.Error(apiErr)
+		SendNatsError(mockNatsRequest, apiErr)
 
 		mockNatsRequest.AssertExpectations(t)
 	})

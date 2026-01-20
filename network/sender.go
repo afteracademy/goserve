@@ -7,89 +7,74 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type sender struct{}
-
-func NewResponseSender() ResponseSender {
-	return &sender{}
+func SendCustomResponse[T any](ctx *gin.Context, rescode ResCode, status int, message string, data *T) {
+	sendResponse(ctx, NewCustomResponse(rescode, status, message, data))
 }
 
-func (m *sender) Debug() bool {
-	return gin.Mode() != gin.ReleaseMode
+func SendSuccessMsgResponse(ctx *gin.Context, message string) {
+	sendResponse(ctx, NewSuccessMsgResponse(message))
 }
 
-func (m *sender) Send(ctx *gin.Context) SendResponse {
-	return &send{
-		debug:   m.Debug(),
-		context: ctx,
-	}
+func SendSuccessDataResponse[T any](ctx *gin.Context, message string, data *T) {
+	sendResponse(ctx, NewSuccessDataResponse(message, data))
 }
 
-type send struct {
-	debug   bool
-	context *gin.Context
+func SendBadRequestError(ctx *gin.Context, message string, err error) {
+	sendError(ctx, NewBadRequestError(message, err))
 }
 
-func (s *send) CustomResponse(rescode ResCode, status int, message string, data any) {
-	s.sendResponse(NewCustomResponse(rescode, status, message, data))
+func SendForbiddenError(ctx *gin.Context, message string, err error) {
+	sendError(ctx, NewForbiddenError(message, err))
 }
 
-func (s *send) SuccessMsgResponse(message string) {
-	s.sendResponse(NewSuccessMsgResponse(message))
+func SendUnauthorizedError(ctx *gin.Context, message string, err error) {
+	sendError(ctx, NewUnauthorizedError(message, err))
 }
 
-func (s *send) SuccessDataResponse(message string, data any) {
-	s.sendResponse(NewSuccessDataResponse(message, data))
+func SendNotFoundError(ctx *gin.Context, message string, err error) {
+	sendError(ctx, NewNotFoundError(message, err))
 }
 
-func (s *send) BadRequestError(message string, err error) {
-	s.sendError(NewBadRequestError(message, err))
+func SendInternalServerError(ctx *gin.Context, message string, err error) {
+	sendError(ctx, NewInternalServerError(message, err))
 }
 
-func (s *send) ForbiddenError(message string, err error) {
-	s.sendError(NewForbiddenError(message, err))
-}
-
-func (s *send) UnauthorizedError(message string, err error) {
-	s.sendError(NewUnauthorizedError(message, err))
-}
-
-func (s *send) NotFoundError(message string, err error) {
-	s.sendError(NewNotFoundError(message, err))
-}
-
-func (s *send) InternalServerError(message string, err error) {
-	s.sendError(NewInternalServerError(message, err))
-}
-
-func (s *send) MixedError(err error) {
+func SendMixedError(ctx *gin.Context, err error) {
 	if err == nil {
-		s.InternalServerError("something went wrong", err)
+		SendInternalServerError(ctx, "something went wrong", err)
 		return
 	}
 
 	var apiError ApiError
 	if errors.As(err, &apiError) {
-		s.sendError(apiError)
+		sendError(ctx, apiError)
 		return
 	}
 
-	s.InternalServerError(err.Error(), err)
+	SendInternalServerError(ctx, err.Error(), err)
 }
 
-func (s *send) sendResponse(response Response) {
-	res, err := ValidateDto(response)
-	if err != nil {
-		res = NewInternalServerErrorResponse(err.Error())
+func sendResponse[T any](ctx *gin.Context, response Response[T]) {
+	data := response.GetData()
+	if data != nil {
+		_, err := ValidateDto(data)
+		if err != nil {
+			res := NewInternalServerErrorResponse(err.Error())
+			ctx.JSON(int(res.GetStatus()), res)
+			ctx.Abort()
+			return
+		}
 	}
 
-	s.context.JSON(int(res.GetStatus()), res)
+	ctx.JSON(int(response.GetStatus()), response)
 	// this is needed since gin calls ctx.Next() inside the resposne handeling
 	// ref: https://github.com/gin-gonic/gin/issues/2221
-	s.context.Abort()
+	ctx.Abort()
 }
 
-func (s *send) sendError(err ApiError) {
-	var res Response
+func sendError(ctx *gin.Context, err ApiError) {
+	var debug = gin.Mode() != gin.ReleaseMode
+	var res Response[any]
 
 	switch err.GetCode() {
 	case http.StatusBadRequest:
@@ -101,11 +86,11 @@ func (s *send) sendError(err ApiError) {
 	case http.StatusNotFound:
 		res = NewNotFoundResponse(err.GetMessage())
 	case http.StatusInternalServerError:
-		if s.debug {
+		if debug {
 			res = NewInternalServerErrorResponse(err.Unwrap().Error())
 		}
 	default:
-		if s.debug {
+		if debug {
 			res = NewInternalServerErrorResponse(err.Unwrap().Error())
 		}
 	}
@@ -114,5 +99,5 @@ func (s *send) sendError(err ApiError) {
 		res = NewInternalServerErrorResponse("An unexpected error occurred. Please try again later.")
 	}
 
-	s.sendResponse(res)
+	sendResponse(ctx, res)
 }

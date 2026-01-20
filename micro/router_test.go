@@ -43,11 +43,6 @@ func (m *MockController) Debug() bool {
 	return args.Bool(0)
 }
 
-func (m *MockController) Send(ctx *gin.Context) network.SendResponse {
-	args := m.Called(ctx)
-	return args.Get(0).(network.SendResponse)
-}
-
 func (m *MockController) SendNats(req NatsRequest) SendMessage {
 	args := m.Called(req)
 	return args.Get(0).(SendMessage)

@@ -11,31 +11,31 @@ const (
 	failue_code  ResCode = "10001"
 )
 
-type response struct {
+type response[T any] struct {
 	ResCode ResCode `json:"code" binding:"required"`
 	Status  int     `json:"status" binding:"required"`
 	Message string  `json:"message" binding:"required"`
-	Data    any     `json:"data,omitempty" binding:"required,omitempty"`
+	Data    *T      `json:"data,omitempty" binding:"required,omitempty"`
 }
 
-func (r *response) GetResCode() ResCode {
+func (r *response[T]) GetResCode() ResCode {
 	return r.ResCode
 }
 
-func (r *response) GetStatus() int {
+func (r *response[T]) GetStatus() int {
 	return r.Status
 }
 
-func (r *response) GetMessage() string {
+func (r *response[T]) GetMessage() string {
 	return r.Message
 }
 
-func (r *response) GetData() any {
+func (r *response[T]) GetData() *T {
 	return r.Data
 }
 
-func NewCustomResponse(rescode ResCode, status int, message string, data any) Response {
-	return &response{
+func NewCustomResponse[T any](rescode ResCode, status int, message string, data *T) Response[T] {
+	return &response[T]{
 		ResCode: rescode,
 		Status:  status,
 		Message: message,
@@ -43,8 +43,8 @@ func NewCustomResponse(rescode ResCode, status int, message string, data any) Re
 	}
 }
 
-func NewSuccessDataResponse(message string, data any) Response {
-	return &response{
+func NewSuccessDataResponse[T any](message string, data *T) Response[T] {
+	return &response[T]{
 		ResCode: success_code,
 		Status:  http.StatusOK,
 		Message: message,
@@ -52,50 +52,56 @@ func NewSuccessDataResponse(message string, data any) Response {
 	}
 }
 
-func NewSuccessMsgResponse(message string) Response {
-	return &response{
+func NewSuccessMsgResponse(message string) Response[any] {
+	return &response[any]{
 		ResCode: success_code,
 		Status:  http.StatusOK,
 		Message: message,
+		Data:    nil,
 	}
 }
 
-func NewBadRequestResponse(message string) Response {
-	return &response{
+func NewBadRequestResponse(message string) Response[any] {
+	return &response[any]{
 		ResCode: failue_code,
 		Status:  http.StatusBadRequest,
 		Message: message,
+		Data:    nil,
 	}
 }
 
-func NewForbiddenResponse(message string) Response {
-	return &response{
+func NewForbiddenResponse(message string) Response[any] {
+	return &response[any]{
 		ResCode: failue_code,
 		Status:  http.StatusForbidden,
 		Message: message,
+		Data:    nil,
 	}
 }
 
-func NewUnauthorizedResponse(message string) Response {
-	return &response{
+func NewUnauthorizedResponse(message string) Response[any] {
+	return &response[any]{
 		ResCode: failue_code,
 		Status:  http.StatusUnauthorized,
 		Message: message,
+		Data:    nil,
 	}
 }
 
-func NewNotFoundResponse(message string) Response {
-	return &response{
+func NewNotFoundResponse(message string) Response[any] {
+	return &response[any]{
 		ResCode: failue_code,
 		Status:  http.StatusNotFound,
 		Message: message,
+		Data:    nil,
 	}
 }
 
-func NewInternalServerErrorResponse(message string) Response {
-	return &response{
+func NewInternalServerErrorResponse(message string) Response[any] {
+	return &response[any]{
 		ResCode: failue_code,
 		Status:  http.StatusInternalServerError,
 		Message: message,
+		Data:    nil,
 	}
 }

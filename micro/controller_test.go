@@ -7,18 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewBaseController(t *testing.T) {
+func TestNewController(t *testing.T) {
 	t.Run("should create a new base controller with valid parameters", func(t *testing.T) {
 		basePath := "/api/v1"
 		authProvider := &network.MockAuthenticationProvider{}
 		authorizeProvider := &network.MockAuthorizationProvider{}
 
-		bc := NewBaseController(basePath, authProvider, authorizeProvider)
+		bc := NewController(basePath, authProvider, authorizeProvider)
 
 		assert.NotNil(t, bc)
 		assert.Equal(t, basePath, bc.Path())
-		assert.NotNil(t, bc.(MessageSender))
-		assert.NotNil(t, bc.(network.BaseController))
 	})
 
 	t.Run("should create base controller with empty path", func(t *testing.T) {
@@ -26,7 +24,7 @@ func TestNewBaseController(t *testing.T) {
 		authProvider := &network.MockAuthenticationProvider{}
 		authorizeProvider := &network.MockAuthorizationProvider{}
 
-		bc := NewBaseController(basePath, authProvider, authorizeProvider)
+		bc := NewController(basePath, authProvider, authorizeProvider)
 
 		assert.NotNil(t, bc)
 		assert.Equal(t, basePath, bc.Path())
@@ -35,7 +33,7 @@ func TestNewBaseController(t *testing.T) {
 	t.Run("should create base controller with nil providers", func(t *testing.T) {
 		basePath := "/api"
 
-		bc := NewBaseController(basePath, nil, nil)
+		bc := NewController(basePath, nil, nil)
 
 		assert.NotNil(t, bc)
 		assert.Equal(t, basePath, bc.Path())

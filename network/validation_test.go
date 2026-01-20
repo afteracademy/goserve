@@ -98,9 +98,9 @@ func TestValidateDto(t *testing.T) {
 			Age:   25,
 		}
 
-		_, err := ValidateDto(data)
-		assert.Error(t, err)
-		assert.Equal(t, "invalid payload for validation", err.Error())
+		d, err := ValidateDto(&data)
+		assert.Nil(t, err)
+		assert.Equal(t, data, *d)
 	})
 
 	t.Run("should return error for non-struct pointer", func(t *testing.T) {
@@ -115,49 +115,49 @@ func TestValidateDto(t *testing.T) {
 
 func TestValidateDto_WithDto(t *testing.T) {
 	t.Run("should return unwrapped value for Dto interface", func(t *testing.T) {
-		data := &MockDto{
+		data := MockDto{
 			Field: "test value",
 		}
 
-		result, err := ValidateDto[*MockDto](data)
+		d, err := ValidateDto(&data)
 		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, data, result)
+		assert.NotNil(t, d)
+		assert.Equal(t, data, *d)
 	})
 
 	t.Run("should validate and return error for invalid Dto", func(t *testing.T) {
-		data := &MockDto{
+		data := MockDto{
 			Field: "t", // Too short, min=2
 		}
 
-		result, err := ValidateDto[*MockDto](data)
+		d, err := ValidateDto(&data)
 		assert.Error(t, err)
-		assert.NotNil(t, result)
+		assert.NotNil(t, d)
 		assert.Contains(t, err.Error(), "field")
 	})
 }
 
 func TestValidateDto_WithDtoV(t *testing.T) {
 	t.Run("should use custom ValidateErrors for DtoV", func(t *testing.T) {
-		data := &MockDtoV{
+		data := MockDtoV{
 			Field: "t", // Too short, min=2
 		}
 
-		result, err := ValidateDto[*MockDtoV](data)
+		d, err := ValidateDto(&data)
 		assert.Error(t, err)
-		assert.NotNil(t, result)
+		assert.NotNil(t, d)
 		assert.Contains(t, err.Error(), "field")
 	})
 
 	t.Run("should return unwrapped value for valid DtoV", func(t *testing.T) {
-		data := &MockDtoV{
+		data := MockDtoV{
 			Field: "valid value",
 		}
 
-		result, err := ValidateDto[*MockDtoV](data)
+		d, err := ValidateDto(&data)
 		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, data, result)
+		assert.NotNil(t, d)
+		assert.Equal(t, data, *d)
 	})
 }
 

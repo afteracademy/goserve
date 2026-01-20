@@ -39,13 +39,13 @@ func (b *MockDtoV) ValidateErrors(errs validator.ValidationErrors) ([]string, er
 
 func MockSuccessMsgHandler(msg string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		NewResponseSender().Send(ctx).SuccessMsgResponse(msg)
+		SendSuccessMsgResponse(ctx, msg)
 	}
 }
 
 func MockSuccessDataHandler(msg string, data any) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		NewResponseSender().Send(ctx).SuccessDataResponse(msg, data)
+		SendSuccessDataResponse(ctx, msg, &data)
 	}
 }
 
@@ -265,11 +265,6 @@ func (m *MockAuthenticationProvider) Middleware() gin.HandlerFunc {
 	return args.Get(0).(gin.HandlerFunc)
 }
 
-func (m *MockAuthenticationProvider) Send(ctx *gin.Context) SendResponse {
-	args := m.Called(ctx)
-	return args.Get(0).(SendResponse)
-}
-
 type MockAuthorizationProvider struct {
 	mock.Mock
 }
@@ -281,9 +276,4 @@ func (m *MockAuthorizationProvider) Debug() bool {
 func (m *MockAuthorizationProvider) Middleware(params ...string) gin.HandlerFunc {
 	args := m.Called(params)
 	return args.Get(0).(gin.HandlerFunc)
-}
-
-func (m *MockAuthorizationProvider) Send(ctx *gin.Context) SendResponse {
-	args := m.Called(ctx)
-	return args.Get(0).(SendResponse)
 }

@@ -2,7 +2,6 @@ package micro
 
 import (
 	"github.com/afteracademy/goserve/v2/network"
-	"github.com/gin-gonic/gin"
 	"github.com/nats-io/nats.go/micro"
 )
 
@@ -15,19 +14,9 @@ type SendMessage interface {
 	Error(err error)
 }
 
-type MessageSender interface {
-	SendNats(req NatsRequest) SendMessage
-}
-
-type BaseController interface {
-	MessageSender
-	network.BaseController
-}
-
 type Controller interface {
-	BaseController
+	network.Controller
 	MountNats(group NatsGroup)
-	MountRoutes(group *gin.RouterGroup)
 }
 
 type Router interface {
@@ -37,6 +26,5 @@ type Router interface {
 }
 
 type Module[T any] interface {
-	network.BaseModule[T]
-	Controllers() []Controller
+	network.Module[T]
 }

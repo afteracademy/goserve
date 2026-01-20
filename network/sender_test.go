@@ -14,11 +14,10 @@ import (
 func TestSend_MixedError_Nil(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	sender := NewResponseSender()
 	resp := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(resp)
 
-	sender.Send(ctx).MixedError(nil)
+	SendMixedError(ctx, nil)
 
 	assert.Equal(t, http.StatusInternalServerError, resp.Code)
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, failue_code))
@@ -27,13 +26,11 @@ func TestSend_MixedError_Nil(t *testing.T) {
 
 func TestSend_MixedError_Err(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	sender := NewResponseSender()
 	resp := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(resp)
 
 	err := errors.New("test error")
-	sender.Send(ctx).MixedError(err)
-
+	SendMixedError(ctx, err)
 	assert.Equal(t, http.StatusInternalServerError, resp.Code)
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, failue_code))
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, err.Error()))
@@ -41,13 +38,11 @@ func TestSend_MixedError_Err(t *testing.T) {
 
 func TestSend_MixedError_UnauthorizedError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	sender := NewResponseSender()
 	resp := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(resp)
 
 	err := NewUnauthorizedError("test message", nil)
-	sender.Send(ctx).MixedError(err)
-
+	SendMixedError(ctx, err)
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, failue_code))
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, "test message"))
@@ -55,11 +50,10 @@ func TestSend_MixedError_UnauthorizedError(t *testing.T) {
 
 func TestSend_SuccessMsgResponse(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	sender := NewResponseSender()
 	resp := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(resp)
 
-	sender.Send(ctx).SuccessMsgResponse("test message")
+	SendSuccessMsgResponse(ctx, "test message")
 
 	assert.Equal(t, http.StatusOK, resp.Code)
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, success_code))
@@ -68,27 +62,23 @@ func TestSend_SuccessMsgResponse(t *testing.T) {
 
 func TestSend_SuccessDataResponse_Error(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	sender := NewResponseSender()
 	resp := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(resp)
 
-	data := struct {
-		Field string `json:"field" validate:"required,min=100"`
-	}{
-		Field: "test data",
+	data := &MockPayload{
+		Field: "t",
 	}
 
-	sender.Send(ctx).SuccessDataResponse("test message", data)
+	SendSuccessDataResponse(ctx, "test message", data)
 
 	assert.Equal(t, http.StatusInternalServerError, resp.Code)
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, failue_code))
-	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, "field must be at least 100 characters"))
+	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, "field must be at least 2 characters"))
 	assert.NotContains(t, resp.Body.String(), fmt.Sprintf(`"data":%s`, `{"field":"test data"}`))
 }
 
 func TestSend_SuccessDataResponse(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	sender := NewResponseSender()
 	resp := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(resp)
 
@@ -98,7 +88,7 @@ func TestSend_SuccessDataResponse(t *testing.T) {
 		Field: "test data",
 	}
 
-	sender.Send(ctx).SuccessDataResponse("test message", data)
+	SendSuccessDataResponse(ctx, "test message", &data)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, success_code))

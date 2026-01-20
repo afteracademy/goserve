@@ -4,18 +4,20 @@ import (
 	"github.com/afteracademy/goserve/v2/network"
 )
 
-type baseController struct {
-	MessageSender
-	network.BaseController
+type controller struct {
+	network.Controller
 }
 
-func NewBaseController(
+func NewController(
 	basePath string,
 	authProvider network.AuthenticationProvider,
 	authorizeProvider network.AuthorizationProvider,
-) BaseController {
-	return &baseController{
-		MessageSender:  NewMessageSender(),
-		BaseController: network.NewBaseController(basePath, authProvider, authorizeProvider),
+) Controller {
+	return &controller{
+		Controller: network.NewController(basePath, authProvider, authorizeProvider),
 	}
+}
+
+func (c *controller) MountNats(group NatsGroup) {
+	// To be implemented by specific controllers
 }

@@ -6,13 +6,10 @@ import (
 )
 
 type errorCatcher struct {
-	network.BaseMiddleware
 }
 
 func NewErrorCatcher() network.RootMiddleware {
-	return &errorCatcher{
-		BaseMiddleware: network.NewBaseMiddleware(),
-	}
+	return &errorCatcher{}
 }
 
 func (m *errorCatcher) Attach(engine *gin.Engine) {
@@ -23,9 +20,9 @@ func (m *errorCatcher) Handler(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			if err, ok := r.(error); ok {
-				m.Send(ctx).InternalServerError(err.Error(), err)
+				network.SendInternalServerError(ctx, err.Error(), err)
 			} else {
-				m.Send(ctx).InternalServerError("something went wrong", err)
+				network.SendInternalServerError(ctx, "something went wrong", nil)
 			}
 			ctx.Abort()
 		}

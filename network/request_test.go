@@ -3,8 +3,11 @@ package network
 import (
 	"testing"
 
+	coredto "github.com/afteracademy/goserve/v2/dto"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestReqBody_Payload(t *testing.T) {
@@ -111,4 +114,28 @@ func TestReqQuery_Error(t *testing.T) {
 	}
 
 	MockTestHandler(t, "GET", "/mock", "/mock?wrong=test", "", mockHandler, nil)
+}
+
+func TestReqParam_uuid_Dto(t *testing.T) {
+	id := uuid.New()
+
+	mockHandler := func(ctx *gin.Context) {
+		param, err := ReqParams[coredto.UUID](ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, param.ID.String(), id.String())
+	}
+
+	MockTestHandler(t, "POST", "/mock/id/:id", "/mock/id/"+id.String(), "", mockHandler, nil)
+}
+
+func TestReqParam_mongo_id_Dto(t *testing.T) {
+	id := primitive.NewObjectID()
+
+	mockHandler := func(ctx *gin.Context) {
+		param, err := ReqParams[coredto.MongoId](ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, param.ID.Hex(), id.Hex())
+	}
+
+	MockTestHandler(t, "POST", "/mock/id/:id", "/mock/id/"+id.Hex(), "", mockHandler, nil)
 }

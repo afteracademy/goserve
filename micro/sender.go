@@ -7,36 +7,20 @@ import (
 	"github.com/afteracademy/goserve/v2/network"
 )
 
-type sender struct{}
-
-func NewMessageSender() MessageSender {
-	return &sender{}
-}
-
-func (m *sender) SendNats(req NatsRequest) SendMessage {
-	return &send{
-		natsRequest: req,
-	}
-}
-
-type send struct {
-	natsRequest NatsRequest
-}
-
-func (s *send) Message(data any) {
+func SendNatsMessage[T any](req NatsRequest, data *T) {
 	d, err := network.ValidateDto(data)
 	if err != nil {
-		s.natsRequest.RespondJSON(NewMessage(&d, err))
+		req.RespondJSON(NewMessage(d, err))
 		return
 	}
-	s.natsRequest.RespondJSON(NewMessage(&d, nil))
+	req.RespondJSON(NewMessage(d, nil))
 }
 
-func (s *send) Error(err error) {
+func SendNatsError(req NatsRequest, err error) {
 	if apiError, ok := err.(network.ApiError); ok {
 		msg := fmt.Sprintf("%d:%s", apiError.GetCode(), apiError.GetMessage())
-		s.natsRequest.RespondJSON(NewMessage[any](nil, errors.New(msg)))
+		req.RespondJSON(NewMessage[any](nil, errors.New(msg)))
 		return
 	}
-	s.natsRequest.RespondJSON(NewMessage[any](nil, err))
+	req.RespondJSON(NewMessage[any](nil, err))
 }
