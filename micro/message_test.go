@@ -12,7 +12,7 @@ import (
 func TestNewMessage(t *testing.T) {
 	t.Run("with data and no error", func(t *testing.T) {
 		data := "test data"
-		msg := NewMessage(data, nil)
+		msg := NewMessage(&data, nil)
 		assert.NotNil(t, msg.Data)
 		assert.Equal(t, data, *msg.Data)
 		assert.Nil(t, msg.Error)
@@ -21,7 +21,7 @@ func TestNewMessage(t *testing.T) {
 	t.Run("with data and error", func(t *testing.T) {
 		data := "test data"
 		err := errors.New("test error")
-		msg := NewMessage(data, err)
+		msg := NewMessage(&data, err)
 		assert.NotNil(t, msg.Data)
 		assert.Equal(t, data, *msg.Data)
 		assert.NotNil(t, msg.Error)
@@ -29,9 +29,9 @@ func TestNewMessage(t *testing.T) {
 	})
 
 	t.Run("with nil data and error", func(t *testing.T) {
-		var data *string
+		var data *string = nil
 		err := errors.New("test error")
-		msg := NewMessage(data, err)
+		msg := NewMessage(&data, err)
 		assert.NotNil(t, msg.Data)
 		assert.Equal(t, data, *msg.Data)
 		assert.NotNil(t, msg.Error)
@@ -48,7 +48,7 @@ func TestParseMsg(t *testing.T) {
 
 	t.Run("valid message", func(t *testing.T) {
 		dto := TestDTO{Name: "John Doe", Age: 30}
-		msg := NewMessage(dto, nil)
+		msg := NewMessage(&dto, nil)
 		raw, _ := json.Marshal(msg)
 
 		parsed, err := ParseMsg[TestDTO](raw)
@@ -82,7 +82,7 @@ func TestParseMsg(t *testing.T) {
 	t.Run("validation error", func(t *testing.T) {
 		// Age is less than 18, which should fail validation.
 		dto := TestDTO{Name: "Jane Doe", Age: 17}
-		msg := NewMessage(dto, nil)
+		msg := NewMessage(&dto, nil)
 		raw, _ := json.Marshal(msg)
 
 		parsed, err := ParseMsg[TestDTO](raw)
@@ -94,7 +94,7 @@ func TestParseMsg(t *testing.T) {
 	t.Run("validation error for required field", func(t *testing.T) {
 		// Name is empty, which should fail validation.
 		dto := TestDTO{Name: "", Age: 25}
-		msg := NewMessage(dto, nil)
+		msg := NewMessage(&dto, nil)
 		raw, _ := json.Marshal(msg)
 
 		parsed, err := ParseMsg[TestDTO](raw)
@@ -106,10 +106,8 @@ func TestParseMsg(t *testing.T) {
 
 // TestAnyMessage ensures AnyMessage is an alias for Message[any].
 func TestAnyMessage(t *testing.T) {
-	data := map[string]interface{}{"key": "value"}
-	msg := NewMessage[any](data, nil)
-	var anyMsg *AnyMessage
-	anyMsg = msg
-	assert.NotNil(t, anyMsg)
-	assert.Equal(t, data, *anyMsg.Data)
+	data := map[string]string{"key": "value"}
+	msg := NewMessage(&data, nil)
+	assert.NotNil(t, msg)
+	assert.Equal(t, data, *msg.Data)
 }

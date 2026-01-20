@@ -24,12 +24,12 @@ type send struct {
 }
 
 func (s *send) Message(data any) {
-	d, err := network.ValidateDto(&data)
+	d, err := network.ValidateDto(data)
 	if err != nil {
-		s.natsRequest.RespondJSON(NewMessage(d, err))
+		s.natsRequest.RespondJSON(NewMessage(&d, err))
 		return
 	}
-	s.natsRequest.RespondJSON(NewMessage(d, nil))
+	s.natsRequest.RespondJSON(NewMessage(&d, nil))
 }
 
 func (s *send) Error(err error) {

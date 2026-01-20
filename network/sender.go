@@ -77,8 +77,7 @@ func (s *send) MixedError(err error) {
 }
 
 func (s *send) sendResponse(response Response) {
-	resptr, err := ValidateDto(&response)
-	res := *resptr
+	res, err := ValidateDto(response)
 	if err != nil {
 		res = NewInternalServerErrorResponse(err.Error())
 	}

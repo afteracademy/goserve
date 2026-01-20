@@ -51,7 +51,7 @@ func newRequest[T any](builder *requestBuilder[T], data any) Request[T] {
 }
 
 func (r *request[T]) Nats() (*T, error) {
-	sendMsg := NewMessage(r.data, nil)
+	sendMsg := NewMessage(&r.data, nil)
 	sendPayload, err := json.Marshal(sendMsg)
 	if err != nil {
 		return nil, err

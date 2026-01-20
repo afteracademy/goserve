@@ -8,13 +8,13 @@ import (
 )
 
 type Message[T any] struct {
-	Data  *T       `json:"data,omitempty"`
+	Data  *T      `json:"data,omitempty"`
 	Error *string `json:"error,omitempty"`
 }
 
 type AnyMessage = Message[any]
 
-func NewMessage[T any](data T, err error) *Message[T] {
+func NewMessage[T any](data *T, err error) *Message[T] {
 	var e *string
 	if err != nil {
 		er := err.Error()
@@ -22,7 +22,7 @@ func NewMessage[T any](data T, err error) *Message[T] {
 	}
 
 	return &Message[T]{
-		Data:  &data,
+		Data:  data,
 		Error: e,
 	}
 }
