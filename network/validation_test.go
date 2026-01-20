@@ -109,7 +109,7 @@ func TestValidateDto(t *testing.T) {
 
 		_, err := ValidateDto(data)
 		assert.Error(t, err)
-		assert.Equal(t, "invalid payload for validation", err.Error())
+		assert.Equal(t, "only struct payloads are valid for validation", err.Error())
 	})
 }
 
@@ -307,6 +307,19 @@ func TestValidateDto_EdgeCases(t *testing.T) {
 		}
 
 		result, err := ValidateDto(data)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+	})
+
+	t.Run("should validate arrays", func(t *testing.T) {
+		data := &NoValidationStruct{
+			Name:  "test",
+			Value: 123,
+		}
+
+		arr := []*NoValidationStruct{data, data}
+
+		result, err := ValidateDto(&arr)
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
 	})

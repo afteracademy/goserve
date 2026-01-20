@@ -93,7 +93,7 @@ func TestSend_Message(t *testing.T) {
 		data := "simple string"
 
 		mockNatsRequest.On("RespondJSON", mock.MatchedBy(func(msg *Message[string]) bool {
-			return msg.Data != nil && msg.Error != nil && *msg.Error == "invalid payload for validation"
+			return msg.Data != nil && msg.Error != nil && *msg.Error == "only struct payloads are valid for validation"
 		}), mock.Anything).Return(nil).Once()
 
 		SendNatsMessage(mockNatsRequest, &data)

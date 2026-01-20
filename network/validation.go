@@ -15,9 +15,19 @@ func ValidateDto[T any](payload *T) (*T, error) {
 	rv := reflect.ValueOf(payload)
 	if !rv.IsValid() ||
 		rv.Kind() != reflect.Pointer ||
-		rv.IsNil() ||
-		rv.Elem().Kind() != reflect.Struct {
+		rv.IsNil() {
 		return payload, errors.New("invalid payload for validation")
+	}
+
+	if rv.Elem().Kind() == reflect.Slice ||
+		rv.Elem().Kind() == reflect.Map ||
+		rv.Elem().Kind() == reflect.Array {
+		// skip validation for non struct
+		return payload, nil
+	}
+
+	if rv.Elem().Kind() != reflect.Struct {
+		return payload, errors.New("only struct payloads are valid for validation")
 	}
 
 	v := validator.New()
