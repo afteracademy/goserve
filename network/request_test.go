@@ -11,7 +11,7 @@ func TestReqBody_Payload(t *testing.T) {
 	body := `{"field": "test"}`
 
 	mockHandler := func(ctx *gin.Context) {
-		dto, err := ReqBody(ctx, &MockPayload{})
+		dto, err := ReqBody[MockPayload](ctx)
 		assert.NoError(t, err)
 		assert.Equal(t, dto.Field, "test")
 	}
@@ -23,7 +23,7 @@ func TestReqBody_Dto(t *testing.T) {
 	body := `{"field": "test"}`
 
 	mockHandler := func(ctx *gin.Context) {
-		dto, err := ReqBody(ctx, &MockDto{})
+		dto, err := ReqBody[MockDto](ctx)
 		assert.NoError(t, err)
 		assert.Equal(t, dto.Field, "test")
 	}
@@ -35,7 +35,7 @@ func TestReqBody_DtoV(t *testing.T) {
 	body := `{"field": "test"}`
 
 	mockHandler := func(ctx *gin.Context) {
-		dto, err := ReqBody(ctx, &MockDtoV{})
+		dto, err := ReqBody[MockDtoV](ctx)
 		assert.NoError(t, err)
 		assert.Equal(t, dto.Field, "test")
 	}
@@ -47,7 +47,7 @@ func TestReqBody_Validation_Payload_Err(t *testing.T) {
 	body := `{"field": "t"}`
 
 	mockHandler := func(ctx *gin.Context) {
-		dto, err := ReqBody(ctx, &MockPayload{})
+		dto, err := ReqBody[MockPayload](ctx)
 		assert.Equal(t, err.Error(), "field must be at least 2 characters")
 		assert.Equal(t, dto.Field, "t")
 	}
@@ -59,7 +59,7 @@ func TestReqBody_Validation_Dto_Err(t *testing.T) {
 	body := `{"field": "t"}`
 
 	mockHandler := func(ctx *gin.Context) {
-		dto, err := ReqBody(ctx, &MockDto{})
+		dto, err := ReqBody[MockDto](ctx)
 		assert.Equal(t, err.Error(), "field must be at least 2 characters")
 		assert.Equal(t, dto.Field, "t")
 	}
@@ -71,7 +71,7 @@ func TestReqBody_Validation_DtoV_Err(t *testing.T) {
 	body := `{"field": "t"}`
 
 	mockHandler := func(ctx *gin.Context) {
-		dto, err := ReqBody(ctx, &MockDtoV{})
+		dto, err := ReqBody[MockDtoV](ctx)
 		assert.Equal(t, err.Error(), "field must be at least 2 characters")
 		assert.Equal(t, dto.Field, "t")
 	}
@@ -83,7 +83,7 @@ func TestReqBody_Error(t *testing.T) {
 	body := `{"wrong": "test"}`
 
 	mockHandler := func(ctx *gin.Context) {
-		dto, err := ReqBody(ctx, &MockDto{})
+		dto, err := ReqBody[MockDto](ctx)
 		assert.NotNil(t, dto)
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), "field is required")
@@ -94,7 +94,7 @@ func TestReqBody_Error(t *testing.T) {
 
 func TestReqQuery(t *testing.T) {
 	mockHandler := func(ctx *gin.Context) {
-		dto, err := ReqQuery(ctx, &MockDto{})
+		dto, err := ReqQuery[MockDto](ctx)
 		assert.NoError(t, err)
 		assert.Equal(t, dto.Field, "test")
 	}
@@ -104,7 +104,7 @@ func TestReqQuery(t *testing.T) {
 
 func TestReqQuery_Error(t *testing.T) {
 	mockHandler := func(ctx *gin.Context) {
-		dto, err := ReqQuery(ctx, &MockDto{})
+		dto, err := ReqQuery[MockDto](ctx)
 		assert.NotNil(t, dto)
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), "field is required")

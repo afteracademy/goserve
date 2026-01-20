@@ -5,38 +5,42 @@ import (
 )
 
 // ShouldBindJSON in gin internally used go-playground/validator i.e. why we have error with validaiton info
-func ReqBody[T any](ctx *gin.Context, payload T) (T, error) {
-	if err := ctx.ShouldBindJSON(payload); err != nil {
-		e := processErrors(payload, err)
-		return payload, e
+func ReqBody[T any](ctx *gin.Context) (*T, error) {
+	var payload T
+	if err := ctx.ShouldBindJSON(&payload); err != nil {
+		e := processErrors(&payload, err)
+		return &payload, e
 	}
 
-	return ValidateDto(ctx, payload)
+	return validateDto(&payload)
 }
 
-func ReqQuery[T any](ctx *gin.Context, payload T) (T, error) {
-	if err := ctx.ShouldBindQuery(payload); err != nil {
-		e := processErrors(payload, err)
-		return payload, e
+func ReqQuery[T any](ctx *gin.Context) (*T, error) {
+	var payload T
+	if err := ctx.ShouldBindQuery(&payload); err != nil {
+		e := processErrors(&payload, err)
+		return &payload, e
 	}
 
-	return ValidateDto(ctx, payload)
+	return validateDto(&payload)
 }
 
-func ReqParams[T any](ctx *gin.Context, payload T) (T, error) {
-	if err := ctx.ShouldBindUri(payload); err != nil {
-		e := processErrors(payload, err)
-		return payload, e
+func ReqParams[T any](ctx *gin.Context) (*T, error) {
+	var payload T
+	if err := ctx.ShouldBindUri(&payload); err != nil {
+		e := processErrors(&payload, err)
+		return &payload, e
 	}
 
-	return ValidateDto(ctx, payload)
+	return validateDto(&payload)
 }
 
-func ReqHeaders[T any](ctx *gin.Context, payload T) (T, error) {
-	if err := ctx.ShouldBindHeader(payload); err != nil {
-		e := processErrors(payload, err)
-		return payload, e
+func ReqHeaders[T any](ctx *gin.Context) (*T, error) {
+	var payload T
+	if err := ctx.ShouldBindHeader(&payload); err != nil {
+		e := processErrors(&payload, err)
+		return &payload, e
 	}
 
-	return ValidateDto(ctx, payload)
+	return validateDto(&payload)
 }

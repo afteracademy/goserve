@@ -54,7 +54,7 @@ type BaseService interface {
 }
 
 type Dto[T any] interface {
-	GetValue() T
+	GetValue() *T
 }
 
 type DtoV[T any] interface {

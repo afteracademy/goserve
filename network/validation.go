@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/afteracademy/goserve/v2/utility"
-	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
-func ValidateDto[T any](ctx *gin.Context, payload T) (T, error) {
+// payload should be a pointer to struct
+func validateDto[T any](payload T) (T, error) {
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
 	if err := v.Struct(payload); err != nil {
@@ -18,12 +18,13 @@ func ValidateDto[T any](ctx *gin.Context, payload T) (T, error) {
 	}
 
 	if dto, ok := any(payload).(Dto[T]); ok {
-		return dto.GetValue(), nil
+		return *dto.GetValue(), nil
 	}
 
 	return payload, nil
 }
 
+// payload should be a pointer to struct
 func processErrors[T any](payload T, err error) error {
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		var msgs []string
