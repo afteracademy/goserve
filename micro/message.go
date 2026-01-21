@@ -25,7 +25,7 @@ func NewMessage[T any](data *T, err error) *message[T] {
 	}
 }
 
-func NewMsgToJson[T any](data *T) ([]byte, error) {
+func MsgToJson[T any](data *T) ([]byte, error) {
 	msg := NewMessage(data, nil)
 
 	jsonMsg, err := json.Marshal(msg)
@@ -41,7 +41,7 @@ func NewMsgToJson[T any](data *T) ([]byte, error) {
 	return jsonMsg, nil
 }
 
-func NewJsonToMsg[T any](data []byte) (*T, error) {
+func JsonToMsg[T any](data []byte) (*T, error) {
 	var msg message[T]
 	err := json.Unmarshal(data, &msg)
 	if err != nil {

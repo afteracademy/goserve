@@ -7,7 +7,7 @@ import (
 )
 
 func RequestNats[S any, R any](client natsClient, subject string, sData *S) (*R, error) {
-	msgJson, err := NewMsgToJson(sData)
+	msgJson, err := MsgToJson(sData)
 	if err != nil {
 		return nil, err
 	}
@@ -17,7 +17,7 @@ func RequestNats[S any, R any](client natsClient, subject string, sData *S) (*R,
 		return nil, err
 	}
 
-	rData, err := NewJsonToMsg[R](natsMsg.Data)
+	rData, err := JsonToMsg[R](natsMsg.Data)
 	if err != nil {
 		return rData, err
 	}

@@ -46,7 +46,7 @@ func TestNewMessage(t *testing.T) {
 	})
 }
 
-// TestNewMsgToJson tests the NewMsgToJson function.
+// TestNewMsgToJson tests the MsgToJson function.
 func TestNewMsgToJson(t *testing.T) {
 	type TestDTO struct {
 		Name string `json:"name" validate:"required"`
@@ -55,7 +55,7 @@ func TestNewMsgToJson(t *testing.T) {
 
 	t.Run("valid dto", func(t *testing.T) {
 		dto := TestDTO{Name: "John Doe", Age: 30}
-		jsonBytes, err := NewMsgToJson(&dto)
+		jsonBytes, err := MsgToJson(&dto)
 		assert.NoError(t, err)
 		assert.NotNil(t, jsonBytes)
 
@@ -70,7 +70,7 @@ func TestNewMsgToJson(t *testing.T) {
 
 	t.Run("validation error - missing required field", func(t *testing.T) {
 		dto := TestDTO{Name: "", Age: 25}
-		jsonBytes, err := NewMsgToJson(&dto)
+		jsonBytes, err := MsgToJson(&dto)
 		assert.Error(t, err)
 		assert.NotNil(t, jsonBytes)
 		assert.Contains(t, err.Error(), "name is required")
@@ -78,7 +78,7 @@ func TestNewMsgToJson(t *testing.T) {
 
 	t.Run("validation error - age constraint", func(t *testing.T) {
 		dto := TestDTO{Name: "Jane Doe", Age: 17}
-		jsonBytes, err := NewMsgToJson(&dto)
+		jsonBytes, err := MsgToJson(&dto)
 		assert.Error(t, err)
 		assert.NotNil(t, jsonBytes)
 		assert.Contains(t, err.Error(), "age must be greater than or equal to 18")
@@ -86,14 +86,14 @@ func TestNewMsgToJson(t *testing.T) {
 
 	t.Run("with nil dto", func(t *testing.T) {
 		var dto *TestDTO = nil
-		jsonBytes, err := NewMsgToJson(dto)
+		jsonBytes, err := MsgToJson(dto)
 		assert.Error(t, err)
 		assert.NotNil(t, jsonBytes)
 	})
 
 	t.Run("with simple type", func(t *testing.T) {
 		data := "hello world"
-		jsonBytes, err := NewMsgToJson(&data)
+		jsonBytes, err := MsgToJson(&data)
 		assert.Error(t, err)
 		assert.NotNil(t, jsonBytes)
 
@@ -105,7 +105,7 @@ func TestNewMsgToJson(t *testing.T) {
 	})
 }
 
-// TestNewJsonToMsg tests the NewJsonToMsg function.
+// TestNewJsonToMsg tests the JsonToMsg function.
 func TestNewJsonToMsg(t *testing.T) {
 	type TestDTO struct {
 		Name string `json:"name" validate:"required"`
@@ -117,7 +117,7 @@ func TestNewJsonToMsg(t *testing.T) {
 		msg := NewMessage(&dto, nil)
 		jsonBytes, _ := json.Marshal(msg)
 
-		parsed, err := NewJsonToMsg[TestDTO](jsonBytes)
+		parsed, err := JsonToMsg[TestDTO](jsonBytes)
 		assert.NoError(t, err)
 		assert.NotNil(t, parsed)
 		assert.Equal(t, "John Doe", parsed.Name)
@@ -132,7 +132,7 @@ func TestNewJsonToMsg(t *testing.T) {
 		}
 		jsonBytes, _ := json.Marshal(msg)
 
-		parsed, err := NewJsonToMsg[TestDTO](jsonBytes)
+		parsed, err := JsonToMsg[TestDTO](jsonBytes)
 		assert.Error(t, err)
 		assert.Equal(t, errMsg, err.Error())
 		assert.Nil(t, parsed)
@@ -140,7 +140,7 @@ func TestNewJsonToMsg(t *testing.T) {
 
 	t.Run("invalid json", func(t *testing.T) {
 		jsonBytes := []byte(`{"data": "invalid"`)
-		parsed, err := NewJsonToMsg[TestDTO](jsonBytes)
+		parsed, err := JsonToMsg[TestDTO](jsonBytes)
 		assert.Error(t, err)
 		assert.Nil(t, parsed)
 	})
@@ -150,7 +150,7 @@ func TestNewJsonToMsg(t *testing.T) {
 		msg := NewMessage(&dto, nil)
 		jsonBytes, _ := json.Marshal(msg)
 
-		parsed, err := NewJsonToMsg[TestDTO](jsonBytes)
+		parsed, err := JsonToMsg[TestDTO](jsonBytes)
 		assert.Error(t, err)
 		assert.NotNil(t, parsed)
 		assert.Contains(t, err.Error(), "age must be greater than or equal to 18")
@@ -161,7 +161,7 @@ func TestNewJsonToMsg(t *testing.T) {
 		msg := NewMessage(&dto, nil)
 		jsonBytes, _ := json.Marshal(msg)
 
-		parsed, err := NewJsonToMsg[TestDTO](jsonBytes)
+		parsed, err := JsonToMsg[TestDTO](jsonBytes)
 		assert.Error(t, err)
 		assert.NotNil(t, parsed)
 		assert.Contains(t, err.Error(), "name is required")
@@ -169,7 +169,7 @@ func TestNewJsonToMsg(t *testing.T) {
 
 	t.Run("empty json object", func(t *testing.T) {
 		jsonBytes := []byte(`{}`)
-		parsed, err := NewJsonToMsg[TestDTO](jsonBytes)
+		parsed, err := JsonToMsg[TestDTO](jsonBytes)
 		assert.Error(t, err)
 		assert.Nil(t, parsed)
 	})
@@ -179,7 +179,7 @@ func TestNewJsonToMsg(t *testing.T) {
 		msg := NewMessage(&data, nil)
 		jsonBytes, _ := json.Marshal(msg)
 
-		parsed, err := NewJsonToMsg[string](jsonBytes)
+		parsed, err := JsonToMsg[string](jsonBytes)
 		assert.Error(t, err)
 		assert.NotNil(t, parsed)
 		assert.Equal(t, "hello world", *parsed)
