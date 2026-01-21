@@ -7,31 +7,45 @@ import (
 	"github.com/afteracademy/goserve/v2/network"
 )
 
-type Message[T any] struct {
+type message[T any] struct {
 	Data  *T      `json:"data,omitempty"`
 	Error *string `json:"error,omitempty"`
 }
 
-type AnyMessage = Message[any]
-
-func NewMessage[T any](data *T, err error) *Message[T] {
+func NewMessage[T any](data *T, err error) *message[T] {
 	var e *string
 	if err != nil {
 		er := err.Error()
 		e = &er
 	}
 
-	return &Message[T]{
+	return &message[T]{
 		Data:  data,
 		Error: e,
 	}
 }
 
-func ParseMsg[T any](data []byte) (*T, error) {
-	var msg Message[T]
+func NewMsgToJson[T any](data *T) ([]byte, error) {
+	msg := NewMessage(data, nil)
+
+	jsonMsg, err := json.Marshal(msg)
+	if err != nil {
+		return jsonMsg, err
+	}
+
+	_, err = network.ValidateDto(data)
+	if err != nil {
+		return jsonMsg, err
+	}
+
+	return jsonMsg, nil
+}
+
+func NewJsonToMsg[T any](data []byte) (*T, error) {
+	var msg message[T]
 	err := json.Unmarshal(data, &msg)
 	if err != nil {
-		return msg.Data, err
+		return nil, err
 	}
 
 	if msg.Error != nil {
@@ -39,10 +53,10 @@ func ParseMsg[T any](data []byte) (*T, error) {
 		return msg.Data, err
 	}
 
-	dto, err := network.ValidateDto(msg.Data)
+	_, err = network.ValidateDto(msg.Data)
 	if err != nil {
-		return dto, err
+		return msg.Data, err
 	}
 
-	return dto, err
+	return msg.Data, err
 }

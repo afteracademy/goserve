@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewRequestBuilder(t *testing.T) {
+func TestRequestNats(t *testing.T) {
 	s := RunNatsServerOnPort(t, -1)
 	defer s.Shutdown()
 
@@ -18,76 +18,18 @@ func TestNewRequestBuilder(t *testing.T) {
 	assert.NoError(t, err)
 	defer nc.Close()
 
-	mockNatsClient := &natsClient{
-		Conn:    nc,
-		Timeout: 1 * time.Second,
-	}
-
-	subject := "test.subject"
-
-	t.Run("should create a request builder", func(t *testing.T) {
-		builder := NewRequestBuilder[any](mockNatsClient, subject)
-		assert.NotNil(t, builder)
-		assert.Equal(t, mockNatsClient, builder.NatsClient())
-	})
-
-	t.Run("should create builder with correct subject", func(t *testing.T) {
-		subject := "user.service.get"
-		builder := NewRequestBuilder[any](mockNatsClient, subject)
-		assert.NotNil(t, builder)
-	})
-}
-
-func TestRequestBuilder_Request(t *testing.T) {
-	s := RunNatsServerOnPort(t, -1)
-	defer s.Shutdown()
-
-	nc, err := nats.Connect(s.ClientURL())
-	assert.NoError(t, err)
-	defer nc.Close()
-
-	mockNatsClient := &natsClient{
-		Conn:    nc,
-		Timeout: 1 * time.Second,
-	}
-
-	subject := "test.request"
-
-	t.Run("should create a request object", func(t *testing.T) {
-		builder := NewRequestBuilder[any](mockNatsClient, subject)
-		req := builder.Request("test data")
-		assert.NotNil(t, req)
-	})
-
-	t.Run("should create request with struct data", func(t *testing.T) {
-		type UserRequest struct {
-			ID   int    `json:"id"`
-			Name string `json:"name"`
-		}
-
-		builder := NewRequestBuilder[any](mockNatsClient, subject)
-		data := UserRequest{ID: 1, Name: "test"}
-		req := builder.Request(data)
-		assert.NotNil(t, req)
-	})
-}
-
-func TestRequest_Nats(t *testing.T) {
-	s := RunNatsServerOnPort(t, -1)
-	defer s.Shutdown()
-
-	nc, err := nats.Connect(s.ClientURL())
-	assert.NoError(t, err)
-	defer nc.Close()
-
-	mockNatsClient := &natsClient{
+	mockNatsClient := natsClient{
 		Conn:    nc,
 		Timeout: 2 * time.Second,
 	}
 
+	type TestRequest struct {
+		Action string `json:"action" validate:"required"`
+	}
+
 	type TestResponse struct {
-		Message string `json:"message"`
-		Status  string `json:"status"`
+		Message string `json:"message" validate:"required"`
+		Status  string `json:"status" validate:"required"`
 	}
 
 	t.Run("should send request and receive successful response", func(t *testing.T) {
@@ -95,7 +37,7 @@ func TestRequest_Nats(t *testing.T) {
 
 		// Mock subscriber responding with success
 		_, err := nc.Subscribe(subject, func(m *nats.Msg) {
-			var receivedMsg Message[any]
+			var receivedMsg message[TestRequest]
 			json.Unmarshal(m.Data, &receivedMsg)
 
 			respData := TestResponse{Message: "success", Status: "ok"}
@@ -105,10 +47,8 @@ func TestRequest_Nats(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		builder := NewRequestBuilder[TestResponse](mockNatsClient, subject)
-		req := builder.Request(map[string]string{"action": "test"})
-
-		resp, err := req.Nats()
+		reqData := TestRequest{Action: "test"}
+		resp, err := RequestNats[TestRequest, TestResponse](mockNatsClient, subject, &reqData)
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
 		assert.Equal(t, "success", resp.Message)
@@ -118,15 +58,13 @@ func TestRequest_Nats(t *testing.T) {
 	t.Run("should handle timeout when no subscriber", func(t *testing.T) {
 		subject := "test.timeout"
 
-		mockClientTimeout := &natsClient{
+		mockClientTimeout := natsClient{
 			Conn:    nc,
 			Timeout: 0 * time.Second,
 		}
 
-		builder := NewRequestBuilder[TestResponse](mockClientTimeout, subject)
-		req := builder.Request("request data")
-
-		resp, err := req.Nats()
+		reqData := TestRequest{Action: "timeout"}
+		resp, err := RequestNats[TestRequest, TestResponse](mockClientTimeout, subject, &reqData)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, nats.ErrTimeout)
 		assert.Nil(t, resp)
@@ -137,17 +75,14 @@ func TestRequest_Nats(t *testing.T) {
 
 		_, err := nc.Subscribe(subject, func(m *nats.Msg) {
 			errMsg := "service error occurred"
-			var data *string = nil
-			resp := NewMessage(data, errors.New(errMsg))
+			resp := NewMessage[TestResponse](nil, errors.New(errMsg))
 			rawResp, _ := json.Marshal(resp)
 			m.Respond(rawResp)
 		})
 		assert.NoError(t, err)
 
-		builder := NewRequestBuilder[TestResponse](mockNatsClient, subject)
-		req := builder.Request("request data")
-
-		resp, err := req.Nats()
+		reqData := TestRequest{Action: "error"}
+		resp, err := RequestNats[TestRequest, TestResponse](mockNatsClient, subject, &reqData)
 		assert.Error(t, err)
 		assert.Equal(t, "service error occurred", err.Error())
 		assert.Nil(t, resp)
@@ -161,10 +96,8 @@ func TestRequest_Nats(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		builder := NewRequestBuilder[TestResponse](mockNatsClient, subject)
-		req := builder.Request("request data")
-
-		resp, err := req.Nats()
+		reqData := TestRequest{Action: "invalid"}
+		resp, err := RequestNats[TestRequest, TestResponse](mockNatsClient, subject, &reqData)
 		assert.Error(t, err)
 		assert.Nil(t, resp)
 	})
@@ -180,17 +113,15 @@ func TestRequest_Nats(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		builder := NewRequestBuilder[TestResponse](mockNatsClient, subject)
-		req := builder.Request("request data")
-
-		resp, err := req.Nats()
+		reqData := TestRequest{Action: "partial"}
+		resp, err := RequestNats[TestRequest, TestResponse](mockNatsClient, subject, &reqData)
 		assert.Error(t, err)
 		assert.Equal(t, "partial error", err.Error())
 		assert.NotNil(t, resp)
 		assert.Equal(t, "partial", resp.Message)
 	})
 
-	t.Run("should handle different data types", func(t *testing.T) {
+	t.Run("should not handle string types", func(t *testing.T) {
 		subject := "test.string"
 
 		_, err := nc.Subscribe(subject, func(m *nats.Msg) {
@@ -201,12 +132,176 @@ func TestRequest_Nats(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		builder := NewRequestBuilder[string](mockNatsClient, subject)
-		req := builder.Request("request")
+		reqData := "request"
+		resp, err := RequestNats[string, string](mockNatsClient, subject, &reqData)
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+		assert.Equal(t, "only struct payloads are valid for validation", err.Error())
+	})
 
-		resp, err := req.Nats()
+	t.Run("should handle validation error on request", func(t *testing.T) {
+		subject := "test.validation"
+
+		// Request with missing required field
+		reqData := TestRequest{Action: ""}
+		resp, err := RequestNats[TestRequest, TestResponse](mockNatsClient, subject, &reqData)
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+		assert.Contains(t, err.Error(), "action is required")
+	})
+
+	t.Run("should handle validation error on response", func(t *testing.T) {
+		subject := "test.response.validation"
+
+		_, err := nc.Subscribe(subject, func(m *nats.Msg) {
+			// Response with missing required field
+			data := TestResponse{Message: "incomplete", Status: ""}
+			resp := NewMessage(&data, nil)
+			rawResp, _ := json.Marshal(resp)
+			m.Respond(rawResp)
+		})
+		assert.NoError(t, err)
+
+		reqData := TestRequest{Action: "validate"}
+		resp, err := RequestNats[TestRequest, TestResponse](mockNatsClient, subject, &reqData)
+		assert.Error(t, err)
+		assert.NotNil(t, resp)
+		assert.Contains(t, err.Error(), "status is required")
+	})
+
+	t.Run("should handle nil request data", func(t *testing.T) {
+		subject := "test.nil.request"
+
+		var reqData *TestRequest = nil
+		resp, err := RequestNats[TestRequest, TestResponse](mockNatsClient, subject, reqData)
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+	})
+}
+
+func TestRequestNatsRaw(t *testing.T) {
+	s := RunNatsServerOnPort(t, -1)
+	defer s.Shutdown()
+
+	nc, err := nats.Connect(s.ClientURL())
+	assert.NoError(t, err)
+	defer nc.Close()
+
+	mockNatsClient := natsClient{
+		Conn:    nc,
+		Timeout: 2 * time.Second,
+	}
+
+	type TestRequest struct {
+		Action string `json:"action"`
+	}
+
+	type TestResponse struct {
+		Message string `json:"message"`
+		Status  string `json:"status"`
+	}
+
+	t.Run("should send raw request and receive response", func(t *testing.T) {
+		subject := "test.raw.success"
+
+		_, err := nc.Subscribe(subject, func(m *nats.Msg) {
+			var receivedReq TestRequest
+			json.Unmarshal(m.Data, &receivedReq)
+
+			respData := TestResponse{Message: "raw success", Status: "ok"}
+			rawResp, _ := json.Marshal(respData)
+			m.Respond(rawResp)
+		})
+		assert.NoError(t, err)
+
+		reqData := TestRequest{Action: "test"}
+		resp, msg, err := RequestNatsRaw[TestRequest, TestResponse](mockNatsClient, subject, &reqData)
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
-		assert.Equal(t, "simple string response", *resp)
+		assert.NotNil(t, msg)
+		assert.Equal(t, "raw success", resp.Message)
+		assert.Equal(t, "ok", resp.Status)
+	})
+
+	t.Run("should handle timeout", func(t *testing.T) {
+		subject := "test.raw.timeout"
+
+		mockClientTimeout := natsClient{
+			Conn:    nc,
+			Timeout: 0 * time.Second,
+		}
+
+		reqData := TestRequest{Action: "timeout"}
+		resp, msg, err := RequestNatsRaw[TestRequest, TestResponse](mockClientTimeout, subject, &reqData)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, nats.ErrTimeout)
+		assert.Nil(t, resp)
+		assert.Nil(t, msg)
+	})
+
+	t.Run("should handle invalid JSON response", func(t *testing.T) {
+		subject := "test.raw.invalid.json"
+
+		_, err := nc.Subscribe(subject, func(m *nats.Msg) {
+			m.Respond([]byte(`{invalid json}`))
+		})
+		assert.NoError(t, err)
+
+		reqData := TestRequest{Action: "invalid"}
+		resp, msg, err := RequestNatsRaw[TestRequest, TestResponse](mockNatsClient, subject, &reqData)
+		assert.Error(t, err)
+		assert.NotNil(t, resp)
+		assert.NotNil(t, msg)
+	})
+
+	t.Run("should handle marshal error on request", func(t *testing.T) {
+		subject := "test.raw.marshal.error"
+
+		// Using a channel which cannot be marshaled to JSON
+		type InvalidRequest struct {
+			Ch chan int `json:"ch"`
+		}
+
+		reqData := InvalidRequest{Ch: make(chan int)}
+		resp, msg, err := RequestNatsRaw[InvalidRequest, TestResponse](mockNatsClient, subject, &reqData)
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+		assert.Nil(t, msg)
+	})
+
+	t.Run("should return raw message for further inspection", func(t *testing.T) {
+		subject := "test.raw.inspect"
+
+		_, err := nc.Subscribe(subject, func(m *nats.Msg) {
+			respData := TestResponse{Message: "inspect", Status: "ok"}
+			rawResp, _ := json.Marshal(respData)
+			m.Respond(rawResp)
+		})
+		assert.NoError(t, err)
+
+		reqData := TestRequest{Action: "inspect"}
+		resp, msg, err := RequestNatsRaw[TestRequest, TestResponse](mockNatsClient, subject, &reqData)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.NotNil(t, msg)
+		assert.NotEmpty(t, msg.Data)
+	})
+
+	t.Run("should handle different data types", func(t *testing.T) {
+		subject := "test.raw.types"
+
+		_, err := nc.Subscribe(subject, func(m *nats.Msg) {
+			resp := 42
+			rawResp, _ := json.Marshal(resp)
+			m.Respond(rawResp)
+		})
+		assert.NoError(t, err)
+
+		reqData := 10
+		resp, msg, err := RequestNatsRaw[int, int](mockNatsClient, subject, &reqData)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.NotNil(t, msg)
+		assert.Equal(t, 42, *resp)
 	})
 }

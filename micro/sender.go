@@ -7,7 +7,7 @@ import (
 	"github.com/afteracademy/goserve/v2/network"
 )
 
-func SendNatsMessage[T any](req NatsRequest, data *T) {
+func RespondNatsMessage[T any](req NatsRequest, data *T) {
 	d, err := network.ValidateDto(data)
 	if err != nil {
 		req.RespondJSON(NewMessage(d, err))
@@ -16,7 +16,7 @@ func SendNatsMessage[T any](req NatsRequest, data *T) {
 	req.RespondJSON(NewMessage(d, nil))
 }
 
-func SendNatsError(req NatsRequest, err error) {
+func RespondNatsError(req NatsRequest, err error) {
 	if apiError, ok := err.(network.ApiError); ok {
 		msg := fmt.Sprintf("%d:%s", apiError.GetCode(), apiError.GetMessage())
 		req.RespondJSON(NewMessage[any](nil, errors.New(msg)))
