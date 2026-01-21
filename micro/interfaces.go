@@ -9,11 +9,6 @@ type NatsGroup = micro.Group
 type NatsHandlerFunc = micro.HandlerFunc
 type NatsRequest = micro.Request
 
-type SendMessage interface {
-	Message(data any)
-	Error(err error)
-}
-
 type Controller interface {
 	network.Controller
 	MountNats(group NatsGroup)
