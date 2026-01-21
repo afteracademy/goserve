@@ -6,7 +6,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func RequestNats[S any, R any](client natsClient, subject string, sData *S) (*R, error) {
+func RequestNats[S any, R any](client NatsClient, subject string, sData *S) (*R, error) {
 	msgJson, err := MsgToJson(sData)
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func RequestNats[S any, R any](client natsClient, subject string, sData *S) (*R,
 	return rData, err
 }
 
-func RequestNatsRaw[S any, R any](client natsClient, subject string, sData *S) (*R, *nats.Msg, error) {
+func RequestNatsRaw[S any, R any](client NatsClient, subject string, sData *S) (*R, *nats.Msg, error) {
 	jData, err := json.Marshal(sData)
 	if err != nil {
 		return nil, nil, err

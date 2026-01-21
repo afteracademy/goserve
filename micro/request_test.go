@@ -18,7 +18,7 @@ func TestRequestNats(t *testing.T) {
 	assert.NoError(t, err)
 	defer nc.Close()
 
-	mockNatsClient := natsClient{
+	mockNatsClient := &natsClient{
 		Conn:    nc,
 		Timeout: 2 * time.Second,
 	}
@@ -58,7 +58,7 @@ func TestRequestNats(t *testing.T) {
 	t.Run("should handle timeout when no subscriber", func(t *testing.T) {
 		subject := "test.timeout"
 
-		mockClientTimeout := natsClient{
+		mockClientTimeout := &natsClient{
 			Conn:    nc,
 			Timeout: 0 * time.Second,
 		}
@@ -187,7 +187,7 @@ func TestRequestNatsRaw(t *testing.T) {
 	assert.NoError(t, err)
 	defer nc.Close()
 
-	mockNatsClient := natsClient{
+	mockNatsClient := &natsClient{
 		Conn:    nc,
 		Timeout: 2 * time.Second,
 	}
@@ -226,7 +226,7 @@ func TestRequestNatsRaw(t *testing.T) {
 	t.Run("should handle timeout", func(t *testing.T) {
 		subject := "test.raw.timeout"
 
-		mockClientTimeout := natsClient{
+		mockClientTimeout := &natsClient{
 			Conn:    nc,
 			Timeout: 0 * time.Second,
 		}
