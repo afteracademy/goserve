@@ -16,9 +16,11 @@
 - Crypto
 
 ## Example Project Build Using This Architecture
-1. [goserve-example-api-server-mongo](https://github.com/afteracademy/goserve-example-api-server-mongo)
+1. [goserve-example-api-server-postgres](https://github.com/afteracademy/goserve-example-api-server-postgres)
 
-2. [goserve-example-api-server-postgres](https://github.com/afteracademy/goserve-example-api-server-postgres)
+2. [goserve-example-api-server-mongo](https://github.com/afteracademy/goserve-example-api-server-mongo)
+
+3. [goserve-microservice-example](https://github.com/afteracademy/gomicro)
 
 ## Architecture
 - TODO
