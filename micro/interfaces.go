@@ -26,5 +26,6 @@ type Router interface {
 }
 
 type Module[T any] interface {
-	network.Module[T]
+	network.BaseModule[T]
+	Controllers() []Controller
 }

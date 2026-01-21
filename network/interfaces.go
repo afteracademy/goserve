@@ -75,10 +75,14 @@ type Router interface {
 	LoadControllers(controllers []Controller)
 }
 
-type Module[T any] interface {
+type BaseModule[T any] interface {
 	GetInstance() *T
 	RootMiddlewares() []RootMiddleware
 	AuthenticationProvider() AuthenticationProvider
 	AuthorizationProvider() AuthorizationProvider
+}
+
+type Module[T any] interface {
+	BaseModule[T]
 	Controllers() []Controller
 }
