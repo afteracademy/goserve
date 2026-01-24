@@ -25,8 +25,6 @@ type DbConfig struct {
 
 type Document[T any] interface {
 	EnsureIndexes(Database)
-	GetValue() *T
-	Validate() error
 }
 
 type Database interface {
