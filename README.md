@@ -79,11 +79,16 @@ Real-world applications built with GoServe:
 
 <div align="center">
 
-### [**Read the Full Documentation on pkg.go.dev**](https://goserve.afteracademy.com)
+### [**Read the Full Documentation on goserve.afteracademy.com**](https://goserve.afteracademy.com)
 
 Comprehensive guides, API references, and examples for all packages
 
 </div>
+
+## Articles & Tutorials
+- [How to Architect Good Go Backend REST API Services](https://afteracademy.com/article/how-to-architect-good-go-backend-rest-api-services)
+- [How to Create Microservices — A Practical Guide Using Go](https://afteracademy.com/article/how-to-create-microservices-a-practical-guide-using-go)
+- [Implement JSON Web Token (JWT) Authentication using AccessToken and RefreshToken](https://afteracademy.com/article/implement-json-web-token-jwt-authentication-using-access-token-and-refresh-token)
 
 ## Contributing
 
