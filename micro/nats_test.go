@@ -47,7 +47,7 @@ func TestNewNatsClient(t *testing.T) {
 		assert.NotNil(t, client.GetInstance().Conn)
 		assert.NotNil(t, client.GetInstance().Service)
 		assert.Equal(t, config.Timeout, client.GetInstance().Timeout)
-		
+
 		// Cleanup
 		client.Disconnect()
 	})
@@ -67,7 +67,7 @@ func TestNewNatsClient(t *testing.T) {
 		client := NewNatsClient(config)
 		assert.NotNil(t, client)
 		assert.Equal(t, timeout, client.GetInstance().Timeout)
-		
+
 		client.Disconnect()
 	})
 }
@@ -91,7 +91,7 @@ func TestNatsClient_GetInstance(t *testing.T) {
 		assert.Equal(t, instance1, instance2)
 		assert.NotNil(t, instance1.Conn)
 		assert.NotNil(t, instance1.Service)
-		
+
 		client.Disconnect()
 	})
 }
@@ -110,11 +110,11 @@ func TestNatsClient_Disconnect(t *testing.T) {
 
 		client := NewNatsClient(config)
 		instance := client.GetInstance()
-		
+
 		assert.False(t, instance.Conn.IsClosed())
-		
+
 		client.Disconnect()
-		
+
 		assert.True(t, instance.Conn.IsClosed())
 	})
 }

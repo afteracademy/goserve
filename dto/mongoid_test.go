@@ -20,40 +20,40 @@ func TestEmptyMongoId(t *testing.T) {
 
 func TestMongoId_GetValue(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    string
-		wantErr  bool
-		checkID  bool
+		name    string
+		input   string
+		wantErr bool
+		checkID bool
 	}{
 		{
-			name:     "should parse valid 24-character hex string",
-			input:    "507f1f77bcf86cd799439011",
-			wantErr:  false,
-			checkID:  true,
+			name:    "should parse valid 24-character hex string",
+			input:   "507f1f77bcf86cd799439011",
+			wantErr: false,
+			checkID: true,
 		},
 		{
-			name:     "should handle invalid mongo id gracefully",
-			input:    "invalid",
-			wantErr:  true,
-			checkID:  false,
+			name:    "should handle invalid mongo id gracefully",
+			input:   "invalid",
+			wantErr: true,
+			checkID: false,
 		},
 		{
-			name:     "should handle empty string",
-			input:    "",
-			wantErr:  true,
-			checkID:  false,
+			name:    "should handle empty string",
+			input:   "",
+			wantErr: true,
+			checkID: false,
 		},
 		{
-			name:     "should handle wrong length string",
-			input:    "507f1f77bcf86cd799",
-			wantErr:  true,
-			checkID:  false,
+			name:    "should handle wrong length string",
+			input:   "507f1f77bcf86cd799",
+			wantErr: true,
+			checkID: false,
 		},
 		{
-			name:     "should handle another valid mongo id",
-			input:    "65a1b2c3d4e5f6a7b8c9d0e1",
-			wantErr:  false,
-			checkID:  true,
+			name:    "should handle another valid mongo id",
+			input:   "65a1b2c3d4e5f6a7b8c9d0e1",
+			wantErr: false,
+			checkID: true,
 		},
 	}
 

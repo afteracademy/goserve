@@ -156,12 +156,12 @@ func (q *query[T]) InsertAndRetrieveOne(doc *T) (*T, error) {
 	}
 
 	filter := bson.M{"_id": result.InsertedID}
-	retrived, err := q.FindOne(filter, nil)
+	retrieved, err := q.FindOne(filter, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return retrived, nil
+	return retrieved, nil
 }
 
 func (q *query[T]) InsertMany(docs []*T) ([]primitive.ObjectID, error) {
